@@ -16,6 +16,8 @@ Built with [Codemod](https://codemod.com/) `jssg` engine (ast-grep on Tree-sitte
 | 6 | Active network name | `brownie.network.show_active()` and bare `network.show_active()` | `networks.active_provider.network.name` |
 | 7 | Tx-dict → kwargs | `Contract.deploy(arg, {"from": x, "value": v})` | `Contract.deploy(arg, sender=x, value=v)` |
 | 8 | Tx-dict with trailing kwarg | `deploy(addr, {"from": x}, publish_source=...)` | `deploy(addr, sender=x, publish_source=...)` |
+| 9 | `chain.mine(N)` positional arg | `chain.mine(10)` | `chain.mine(num_blocks=10)` |
+| 10 | `chain.sleep(N)` as a statement | `chain.sleep(60)` | `chain.pending_timestamp += 60` |
 
 ## Install & Run
 
@@ -33,12 +35,15 @@ codemod workflow run -w workflow.yaml -t /path/to/your/brownie/project --no-inte
 
 ## Validated on real OSS repos
 
-Tested on [`brownie-mix/token-mix`](https://github.com/brownie-mix/token-mix) and [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me):
+Tested on three Brownie OSS projects covering different shapes (token tutorial, simple deploy script, multi-network lottery with VRF mocks):
 
 | Repo | Files modified | Patterns auto-migrated | False positives |
 |---|---|---|---|
-| token-mix | 4 / 5 `.py` files | ~62 (3 imports, 30+ tx-dicts, 6 reverts, 2 bare imports) | **0** |
-| brownie_fund_me | 5 / 6 `.py` files | ~21 (5 imports, 8 tx-dicts, 8 show_active) | **0** |
+| [brownie-mix/token-mix](https://github.com/brownie-mix/token-mix) | 4 / 5 `.py` | ~62 (3 imports, 30+ tx-dicts, 6 reverts, 2 bare imports) | **0** |
+| [PatrickAlphaC/brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 `.py` | ~21 (5 imports, 8 tx-dicts, 8 show_active) | **0** |
+| [PatrickAlphaC/smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 `.py` | ~30 (5 imports, 13 tx-dicts, 9 show_active) | **0** |
+
+**Combined: 14/18 files modified across 3 OSS repos. ~113 patterns auto-migrated. 0 false positives.**
 
 See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up.
 
@@ -59,9 +64,11 @@ These patterns are flagged with `# TODO(brownie-to-ape): …` for manual review 
 
 - **Contract artifacts** (`Token`, `FundMe`, etc.) — Ape uses `project.<ContractName>` access. The codemod can't infer the project structure.
 - **`MockV3Aggregator[-1]` style** — Brownie's "last deployed" subscript. Ape uses `project.<Name>.deployments[-1]`.
-- **`accounts.add(private_key)`** — Ape requires `accounts.import_account_from_private_key(...)`.
-- **`chain.sleep(N)` / `chain.mine(N)` argument styles** — Ape uses `chain.pending_timestamp += N` and `chain.mine(num_blocks=N)`. Skipped because `chain.mine()` ambiguously accepts both forms.
+- **`accounts.add(private_key)`** — Ape requires `accounts.import_account_from_private_key(alias, passphrase, key)`.
+- **`chain.sleep(N)` in expressions** — Only the *statement* form is auto-migrated. `result = chain.sleep(N)` (rare — Brownie returns None) is left alone since the rewrite would change semantics.
+- **`chain.mine(N, timedelta)`** — Brownie's two-arg form. Skipped (only single positional N is migrated to `num_blocks=N`).
 - **`brownie.exceptions.VirtualMachineError`** — class names differ in `ape.exceptions`.
+- **`brownie-config.yaml`** → `ape-config.yaml` — YAML config schema migration is out of jssg scope; needs a separate transform.
 
 ## Project Layout
 

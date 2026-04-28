@@ -6,14 +6,16 @@
 
 ## TL;DR
 
-I built a Codemod recipe (`brownie-to-ape`) that migrates Python smart-contract projects from the deprecated Brownie framework to ApeWorx Ape. Validated on two real open-source repos:
+I built a Codemod recipe (`brownie-to-ape`) that migrates Python smart-contract projects from the deprecated Brownie framework to ApeWorx Ape. Validated on **three** real open-source repos with **zero false positives**:
 
 | Repo | Files | Patterns auto-migrated | False positives | False negatives (TODOs) |
 |---|---|---|---|---|
 | [`brownie-mix/token-mix`](https://github.com/brownie-mix/token-mix) | 4 / 5 .py | ~62 | **0** | 1 (Token contract reference) |
 | [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 .py | ~21 | **0** | 4 (contract names) |
+| [`PatrickAlphaC/smartcontract-lottery`](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 .py | ~30 | **0** | 5 (contract names + `exceptions`) |
+| **Combined** | **14 / 18** | **~113** | **0** | **10 contract/exception TODOs** |
 
-The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~220 LOC, 4 transform passes).
+The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~290 LOC, 6 transform passes). 26 fixture tests, all passing.
 
 ---
 
@@ -42,17 +44,19 @@ I categorized Brownie patterns into 8 groups by transform feasibility:
 
 Groups 1–6 are auto-migrated. Group 7 is auto-flagged via a TODO comment so the user knows where to look. Group 8 is left alone (FN by design — automation here would risk FPs).
 
-## 3. Architecture: 4-pass jssg transform
+## 3. Architecture: 6-pass jssg transform
 
-Codemod's `jssg` engine runs JavaScript/TypeScript code that operates on Tree-sitter ASTs. The codemod has 4 ordered passes (single file, ~220 LOC):
+Codemod's `jssg` engine runs JavaScript/TypeScript code that operates on Tree-sitter ASTs. The codemod has 6 ordered passes (single file, ~290 LOC):
 
 ```
-Pass 1: from brownie import X, Y, Z  →  from ape import X', Y' (+ TODO for dropped Z)
+Pass 1:  from brownie import X, Y, Z  →  from ape import X', Y' (+ TODO for dropped Z)
 Pass 2a: brownie.network.show_active()  →  networks.active_provider.network.name
 Pass 2b: bare network.show_active()  →  networks.active_provider.network.name
-Pass 3: brownie.<known_attr>  →  ape.<attr>  (whitelist, skips inside dict literals)
+Pass 3:  brownie.<known_attr>  →  ape.<attr>  (whitelist, skips inside dict literals)
 Pass 3b: import brownie  →  import ape  (only if Pass 3 fired)
-Pass 4: tx-dict {"from": x, ...}  →  kwargs sender=x, ...  (whitelist guard)
+Pass 4:  tx-dict {"from": x, ...}  →  kwargs sender=x, ...  (whitelist + spread guard)
+Pass 5:  chain.mine(N)  →  chain.mine(num_blocks=N)  (positional → kwarg)
+Pass 6:  chain.sleep(N) as a statement  →  chain.pending_timestamp += N
 ```
 
 ### Why this ordering?
@@ -126,7 +130,7 @@ I tested on two repos representing typical Brownie project shapes — a token tu
 
 ## 6. Test Suite
 
-19 fixture tests (input/expected pairs), all passing. They cover:
+26 fixture tests (input/expected pairs), all passing. They cover:
 
 | # | Fixture | What it asserts |
 |---|---|---|
@@ -147,16 +151,23 @@ I tested on two repos representing typical Brownie project shapes — a token tu
 | 17 | tx-dict-with-trailing-kwarg | Dict not at last arg position (real `FundMe.deploy` pattern) |
 | 18 | bare-import-brownie | `import brownie` → `import ape` when Pass 3 fires |
 | 19 | bare-import-no-attr-rewrite | `import brownie` left alone if no `brownie.<attr>` was rewritten |
+| 20 | byte-string-key | `{b"from": x}` NOT transformed (FP guard against prefixed strings) |
+| 21 | spread-in-tx-dict | `{**other, "from": x}` NOT transformed (spread guard) |
+| 22 | dropped-with-alias | `from brownie import Contract as C` TODO emits `Contract as C` |
+| 23 | chain-mine-positional | `chain.mine(10)` → `chain.mine(num_blocks=10)` |
+| 24 | chain-mine-already-kwarg | `chain.mine(num_blocks=5)` and `chain.mine()` left alone |
+| 25 | chain-sleep-statement | `chain.sleep(60)` → `chain.pending_timestamp += 60` |
+| 26 | chain-sleep-in-expression | `result = chain.sleep(60)` left alone (semantic risk) |
 
 ```bash
 $ codemod jssg test -l python ./scripts/codemod.ts ./tests/fixtures
-running 19 tests
+running 26 tests
 test 01-basic-imports                 ... ok
 test 02-import-with-contract          ... ok
 […]
-test 19-bare-import-no-attr-rewrite   ... ok
+test 26-chain-sleep-in-expression     ... ok
 
-test result: ok. 19 passed; 0 failed; 0 ignored
+test result: ok. 26 passed; 0 failed; 0 ignored
 ```
 
 ## 7. AI vs Manual Effort Breakdown

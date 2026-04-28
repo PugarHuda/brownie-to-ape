@@ -71,9 +71,12 @@ const TX_DICT_KEYS = new Set([
 ]);
 
 // Strip enclosing quotes from a Python string literal token.
-// Returns the inner content, or null if not a simple quoted string.
+// Returns the inner content, or null if the literal is anything other than
+// a PLAIN quoted string. Prefixed strings (b"...", f"...", r"..." etc.) are
+// rejected — Brownie tx-dict keys are always plain strings, and accepting
+// prefixed forms risks transforming dicts that aren't real tx-dicts.
 function stripPyStringQuotes(literal: string): string | null {
-  const m = literal.match(/^[rRbBuUfF]{0,2}('''|"""|'|")(.*)\1$/s);
+  const m = literal.match(/^('''|"""|'|")(.*)\1$/s);
   return m ? m[2] : null;
 }
 
@@ -143,7 +146,8 @@ const codemod: Codemod<Python> = async (root) => {
     const dropped: string[] = [];
     for (const item of imported) {
       if (IMPORT_NAMES_DROP.has(item.name) || isLikelyContractName(item.name)) {
-        dropped.push(item.alias ?? item.name);
+        // Preserve full "Name as Alias" form so the user can grep for either.
+        dropped.push(item.alias ? `${item.name} as ${item.alias}` : item.name);
         continue;
       }
       const newName = IMPORT_NAME_RENAMES[item.name] ?? item.name;
@@ -287,7 +291,68 @@ const codemod: Codemod<Python> = async (root) => {
 
     if (aborted || !hasFrom) continue;
 
+    // Reject dicts containing dict_splat (`**other`) — we can't safely fold
+    // splats into kwargs without losing semantics. Brownie tx-dicts never use
+    // splats so this also catches odd patterns we shouldn't touch.
+    const hasSplat = lastArg
+      .children()
+      .some((c) => c.kind() === "dictionary_splat_pattern" || c.kind() === "dictionary_splat");
+    if (hasSplat) continue;
+
     edits.push(lastArg.replace(kwargParts.join(", ")));
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 5: chain.mine(N) → chain.mine(num_blocks=N)
+  // Only fires when the call has exactly one POSITIONAL arg (kwargs are left
+  // alone). Brownie's chain.mine accepts a positional block count; Ape
+  // requires the keyword. The positional-int form is safe to convert.
+  // ────────────────────────────────────────────────────────────────────
+  const chainMineCalls = rootNode.findAll({
+    rule: { pattern: "chain.mine($N)" },
+  });
+  for (const callNode of chainMineCalls) {
+    const argList = callNode.field("arguments");
+    if (!argList) continue;
+    const argChildren = argList
+      .children()
+      .filter((c) => !["(", ")", ","].includes(c.kind()));
+    if (argChildren.length !== 1) continue;
+    const arg = argChildren[0];
+    if (arg.kind() === "keyword_argument") continue;
+    edits.push(argList.replace(`(num_blocks=${arg.text()})`));
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 6: chain.sleep(N) → chain.pending_timestamp += N
+  // Only fires when the call is the entire body of an expression_statement
+  // (i.e. its return value isn't being used). When chain.sleep is in an
+  // assignment or expression, we leave it alone — the rewrite would change
+  // semantics and risk a false positive.
+  // ────────────────────────────────────────────────────────────────────
+  const chainSleepCalls = rootNode.findAll({
+    rule: { pattern: "chain.sleep($N)" },
+  });
+  for (const callNode of chainSleepCalls) {
+    const parent = callNode.parent();
+    if (!parent || parent.kind() !== "expression_statement") continue;
+    // Make sure this call IS the only child of the expression_statement,
+    // not nested in something larger.
+    const stmtChildren = parent
+      .children()
+      .filter((c) => c.kind() !== ";");
+    if (stmtChildren.length !== 1 || stmtChildren[0].text() !== callNode.text()) {
+      continue;
+    }
+    const argList = callNode.field("arguments");
+    if (!argList) continue;
+    const argChildren = argList
+      .children()
+      .filter((c) => !["(", ")", ","].includes(c.kind()));
+    if (argChildren.length !== 1) continue;
+    const arg = argChildren[0];
+    if (arg.kind() === "keyword_argument") continue;
+    edits.push(parent.replace(`chain.pending_timestamp += ${arg.text()}`));
   }
 
   if (edits.length === 0) return null;
