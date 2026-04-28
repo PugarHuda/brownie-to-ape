@@ -1,0 +1,16 @@
+{
+  "name": "brownie-to-ape",
+  "version": "1.0.0",
+  "description": "Automated migration codemod from Brownie to ApeWorx Ape framework — imports, deploy syntax, transaction kwargs, network/chain API, reverts, conftest fixtures",
+  "main": "scripts/codemod.ts",
+  "scripts": {
+    "test": "node scripts/codemod.ts"
+  },
+  "dependencies": {
+    "codemod:ast-grep": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

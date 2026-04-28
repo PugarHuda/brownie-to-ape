@@ -1,0 +1,102 @@
+# brownie-to-ape
+
+Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/) — Python smart-contract framework migration with **zero false positives** on real OSS repos.
+
+Built with [Codemod](https://codemod.com/) `jssg` engine (ast-grep on Tree-sitter Python). Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes).
+
+## What it migrates
+
+| # | Pattern | Before (Brownie) | After (Ape) |
+|---|---|---|---|
+| 1 | Module import rename | `from brownie import network` | `from ape import networks` |
+| 2 | Contract artifact import | `from brownie import FundMe` | `# TODO(brownie-to-ape): … FundMe` |
+| 3 | Built-in unsupported names | `from brownie import exceptions, Wei` | TODO comment, dropped from import |
+| 4 | Bare module import | `import brownie` (when `brownie.reverts/.accounts` used) | `import ape` |
+| 5 | Reverts / accounts / project / config / chain | `brownie.reverts(...)` | `ape.reverts(...)` |
+| 6 | Active network name | `brownie.network.show_active()` and bare `network.show_active()` | `networks.active_provider.network.name` |
+| 7 | Tx-dict → kwargs | `Contract.deploy(arg, {"from": x, "value": v})` | `Contract.deploy(arg, sender=x, value=v)` |
+| 8 | Tx-dict with trailing kwarg | `deploy(addr, {"from": x}, publish_source=...)` | `deploy(addr, sender=x, publish_source=...)` |
+
+## Install & Run
+
+```bash
+# Install Codemod CLI (one-time)
+npm i -g codemod
+
+# Run on your Brownie repo
+codemod run brownie-to-ape -t /path/to/your/brownie/project
+
+# Or run from this directory locally
+cd brownie-to-ape
+codemod workflow run -w workflow.yaml -t /path/to/your/brownie/project --no-interactive --allow-dirty
+```
+
+## Validated on real OSS repos
+
+Tested on [`brownie-mix/token-mix`](https://github.com/brownie-mix/token-mix) and [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me):
+
+| Repo | Files modified | Patterns auto-migrated | False positives |
+|---|---|---|---|
+| token-mix | 4 / 5 `.py` files | ~62 (3 imports, 30+ tx-dicts, 6 reverts, 2 bare imports) | **0** |
+| brownie_fund_me | 5 / 6 `.py` files | ~21 (5 imports, 8 tx-dicts, 8 show_active) | **0** |
+
+See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up.
+
+## Zero-False-Positive Guards
+
+The codemod is engineered to never make incorrect changes. Key guards:
+
+1. **File-level marker** — transforms only run on files that contain the substring `brownie`. Files with unrelated `{"from": x}` patterns (email APIs, regular dicts) are untouched.
+2. **Tx-dict whitelist** — a dict literal is treated as a Brownie tx-dict only if **every key** is in `{"from", "value", "gas", "gas_limit", "gas_price", "max_fee", "priority_fee", "nonce", "required_confs", "allow_revert"}` AND `"from"` is present.
+3. **Contract-name heuristic** — uppercase names that aren't built-in Brownie module names (`accounts`, `network`, `chain`, `config`, `project`) are assumed to be contract artifacts and dropped from imports with a TODO comment.
+4. **`brownie.network` not auto-renamed** — only the specific `brownie.network.show_active()` pattern is rewritten (to the specific Ape equivalent). Other `brownie.network.*` is left for manual review since Ape exposes them differently.
+5. **Replace dict node, not arg list** — preserves edits to surrounding positional args (e.g. `brownie.accounts[0]` inside the same call gets renamed independently).
+6. **Wildcard `from brownie import *` skipped** — too risky to rewrite without symbol tracking.
+
+## What's NOT auto-migrated (intentionally)
+
+These patterns are flagged with `# TODO(brownie-to-ape): …` for manual review or AI-assisted follow-up. They are by design left manual to keep FP at zero.
+
+- **Contract artifacts** (`Token`, `FundMe`, etc.) — Ape uses `project.<ContractName>` access. The codemod can't infer the project structure.
+- **`MockV3Aggregator[-1]` style** — Brownie's "last deployed" subscript. Ape uses `project.<Name>.deployments[-1]`.
+- **`accounts.add(private_key)`** — Ape requires `accounts.import_account_from_private_key(...)`.
+- **`chain.sleep(N)` / `chain.mine(N)` argument styles** — Ape uses `chain.pending_timestamp += N` and `chain.mine(num_blocks=N)`. Skipped because `chain.mine()` ambiguously accepts both forms.
+- **`brownie.exceptions.VirtualMachineError`** — class names differ in `ape.exceptions`.
+
+## Project Layout
+
+```
+brownie-to-ape/
+├── codemod.yaml           # package metadata
+├── workflow.yaml          # single-step jssg workflow
+├── scripts/codemod.ts     # the transform (4 passes, ~200 LOC)
+├── tests/fixtures/        # 19 input/expected test pairs, 100% passing
+├── README.md
+├── CASE_STUDY.md          # hackathon submission write-up
+└── CLAUDE.md              # project context for Claude Code
+```
+
+## Development
+
+```bash
+# Run all tests
+codemod jssg test -l python ./scripts/codemod.ts ./tests/fixtures
+
+# Validate workflow schema
+codemod workflow validate -w workflow.yaml
+
+# Dry-run on a project (preview diff without writing files)
+codemod workflow run -w workflow.yaml -t /path/to/repo --dry-run
+
+# Publish to registry
+codemod login
+codemod publish
+```
+
+## License
+
+MIT — see codemod.yaml.
+
+## Author
+
+Pugar Huda Mantoro · [pugarhudam@gmail.com](mailto:pugarhudam@gmail.com)

@@ -1,0 +1,26 @@
+schema_version: "1.0"
+
+name: "brownie-to-ape"
+version: "0.1.0"
+description: "Automated migration codemod from Brownie to ApeWorx Ape framework — imports, deploy syntax, transaction kwargs, network/chain API, reverts, conftest fixtures"
+author: "Pugar Huda Mantoro <pugarhudam@gmail.com>"
+license: "MIT"
+workflow: "workflow.yaml"
+
+targets:
+  languages: ["python"]
+
+keywords:
+  - "brownie"
+  - "ape"
+  - "apeworx"
+  - "python"
+  - "ethereum"
+  - "smart-contracts"
+  - "migration"
+
+registry:
+  access: "public"
+  visibility: "public"
+
+capabilities: []

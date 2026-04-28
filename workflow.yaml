@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/codemod/codemod/refs/heads/main/schemas/workflow.json
+
+version: "1"
+
+nodes:
+  - id: brownie-to-ape-transform
+    name: Brownie to Ape transformation
+    type: automatic
+    steps:
+      - name: "Apply Brownie -> Ape transforms to Python files"
+        js-ast-grep:
+          js_file: scripts/codemod.ts
+          language: "python"
+          include:
+            - "**/*.py"
+          exclude:
+            - "**/.venv/**"
+            - "**/venv/**"
+            - "**/site-packages/**"
+            - "**/__pycache__/**"
+            - "**/build/**"
+            - "**/.tox/**"
