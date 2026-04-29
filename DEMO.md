@@ -271,6 +271,21 @@ rewritten too.
 
 ---
 
+## Preview safely with `--dry-run`
+
+Before committing to a migration, preview the diff in-memory without
+touching files:
+
+```bash
+npx codemod@latest workflow run \
+  -w workflow.yaml \
+  --target /path/to/your/brownie/project \
+  --dry-run --no-interactive --allow-dirty
+```
+
+The dry-run prints a colored unified diff of every change the codemod
+*would* make. Re-run without `--dry-run` once you're satisfied.
+
 ## What the user sees on stdout
 
 ```
@@ -281,6 +296,60 @@ $ npx codemod@latest workflow run -w workflow.yaml --target /tmp/token-mix --no-
 ✨ Done in 3.021s
 ```
 
-Three seconds for a complete repo migration. See [scripts/benchmark.sh](./scripts/benchmark.sh)
-for the full benchmark across four repos and [benchmark/results.md](./benchmark/results.md)
+Three seconds for a complete repo migration.
+
+## Per-file stats (stderr)
+
+The codemod emits a one-line JSON summary per modified file to stderr,
+useful for CI / wrappers / automated migration tooling:
+
+```json
+{"codemod":"brownie-to-ape","edits":12,"wei_rewritten":false,"unknown_exceptions":[],"rewrote_brownie_attr":true}
+{"codemod":"brownie-to-ape","edits":4,"wei_rewritten":true,"unknown_exceptions":["TransactionError"],"rewrote_brownie_attr":false}
+```
+
+Pipe stderr through `jq` to aggregate across a repo:
+
+```bash
+npx codemod@latest workflow run … 2> stats.jsonl
+jq -s 'map(.edits) | add' stats.jsonl
+# => 137  (total edits across all files)
+```
+
+## Visual demo
+
+A pre-recorded asciinema cast of the demo run is at [`demo/demo.cast`](./demo/demo.cast)
+(44 events, ~14 seconds, valid asciicast v2):
+
+```bash
+# Play locally:
+asciinema play demo/demo.cast
+
+# Or upload + share:
+asciinema upload demo/demo.cast
+```
+
+## Reproducible benchmark
+
+See [scripts/benchmark.sh](./scripts/benchmark.sh) for the full
+benchmark across four reference repos and [benchmark/results.md](./benchmark/results.md)
 for the latest numbers.
+
+```bash
+bash scripts/benchmark.sh
+# Wall-clock per repo: 14-25s (npx warmup) → 3s actual codemod time
+```
+
+## Quick rollback
+
+If something looks off after running the codemod, every change is in
+your working tree — discard with one command:
+
+```bash
+cd /path/to/your/brownie/project
+git checkout -- '*.py'
+```
+
+The codemod never modifies anything outside the target directory and
+never overwrites untracked files (the YAML helper renames legacy →
+`.legacy` instead of deleting).

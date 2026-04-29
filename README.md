@@ -1,12 +1,13 @@
 # brownie-to-ape
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
-[![Tests](https://img.shields.io/badge/tests-43%20passing-brightgreen)](./tests/fixtures)
+[![Tests](https://img.shields.io/badge/tests-46%20passing-brightgreen)](./tests/fixtures)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
 [![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-4-blue)](./CASE_STUDY.md)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue)](./CHANGELOG.md)
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 
-Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 11-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on 4 real OSS Brownie projects with **zero false positives**.
+Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 12-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on 4 real OSS Brownie projects with **zero false positives**.
 
 > Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes + Track 2: Public Case Study).
 
@@ -144,18 +145,40 @@ brownie-to-ape/
 ## Development
 
 ```bash
-# Run all tests
+# Quick (npm scripts):
+npm test            # 46 fixture tests
+npm run validate    # workflow schema validation
+npm run benchmark   # time codemod on 4 reference repos
+npm run demo        # clone + run codemod + show diff
+npm run render-cast # regenerate demo/demo.cast
+
+# Or directly:
 codemod jssg test -l python ./scripts/codemod.ts ./tests/fixtures
-
-# Validate workflow schema
 codemod workflow validate -w workflow.yaml
-
-# Dry-run on a project (preview diff without writing files)
 codemod workflow run -w workflow.yaml -t /path/to/repo --dry-run
+codemod login && codemod publish
+```
 
-# Publish to registry
-codemod login
-codemod publish
+## Rollback
+
+If a codemod run produces something unexpected, every change is in your
+target repo's working tree:
+
+```bash
+cd /path/to/your/brownie/project
+git checkout -- '*.py'   # discard all .py changes
+```
+
+The codemod never touches files outside `--target` and never overwrites
+untracked files (the YAML helper renames legacy → `.legacy`).
+
+## Demo cast
+
+A pre-recorded asciinema cast at [`demo/demo.cast`](./demo/demo.cast)
+(asciicast v2, 44 events, ~14s). Play locally:
+
+```bash
+asciinema play demo/demo.cast
 ```
 
 ## License

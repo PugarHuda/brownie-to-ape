@@ -1,16 +1,34 @@
 {
   "name": "brownie-to-ape",
-  "version": "1.0.0",
-  "description": "Automated migration codemod from Brownie to ApeWorx Ape framework — imports, deploy syntax, transaction kwargs, network/chain API, reverts, conftest fixtures",
-  "main": "scripts/codemod.ts",
+  "version": "0.7.0",
+  "description": "Automated migration codemod from Brownie to ApeWorx Ape — 12-pass jssg transform, 46 tests, zero false positives across 4 OSS repos.",
+  "private": true,
   "scripts": {
-    "test": "node scripts/codemod.ts"
+    "test": "npx codemod@latest jssg test -l python ./scripts/codemod.ts ./tests/fixtures",
+    "validate": "npx codemod@latest workflow validate -w workflow.yaml",
+    "benchmark": "bash scripts/benchmark.sh",
+    "demo": "bash demo/run-demo.sh",
+    "render-cast": "python scripts/render_cast.py",
+    "publish:codemod": "npx codemod@latest publish"
   },
-  "dependencies": {
-    "codemod:ast-grep": "latest"
+  "keywords": [
+    "brownie",
+    "ape",
+    "apeworx",
+    "codemod",
+    "migration",
+    "python",
+    "ethereum",
+    "smart-contracts"
+  ],
+  "license": "MIT",
+  "author": "Pugar Huda Mantoro <pugarhudam@gmail.com>",
+  "homepage": "https://github.com/PugarHuda/brownie-to-ape",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PugarHuda/brownie-to-ape.git"
   },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+  "bugs": {
+    "url": "https://github.com/PugarHuda/brownie-to-ape/issues"
   }
 }

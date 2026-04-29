@@ -590,7 +590,21 @@ const codemod: Codemod<Python> = async (root) => {
   // multiple overlapping edits at the same position.
   // ────────────────────────────────────────────────────────────────────
   if (didRewriteWei) {
-    preludeAdditions.unshift("from ape.utils import convert");
+    // Skip the import injection if the file already has it (partial
+    // prior migration, hand-edited file, etc.) — avoid duplicate
+    // imports.
+    const existingConvertImport = rootNode.findAll({
+      rule: {
+        kind: "import_from_statement",
+        all: [
+          { has: { field: "module_name", regex: "^ape\\.utils$" } },
+          { regex: "convert" },
+        ],
+      },
+    });
+    if (existingConvertImport.length === 0) {
+      preludeAdditions.unshift("from ape.utils import convert");
+    }
   }
   if (preludeAdditions.length > 0) {
     const moduleChildren = rootNode.children();
