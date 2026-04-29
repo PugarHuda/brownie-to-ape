@@ -4,9 +4,10 @@ on:
   push:
     tags:
       - "v*"
+  # Allow manual re-runs without re-tagging.
+  workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -23,5 +24,14 @@ jobs:
       - name: Run jssg fixture suite
         run: npx codemod@latest jssg test -l python ./scripts/codemod.ts ./tests/fixtures
 
-      - name: Publish via Codemod trusted publisher (OIDC)
-        uses: codemod/publish-action@v1
+      - name: Publish to Codemod Registry
+        env:
+          CODEMOD_API_KEY: ${{ secrets.CODEMOD_API_KEY }}
+        run: |
+          if [ -z "$CODEMOD_API_KEY" ]; then
+            echo "::error::CODEMOD_API_KEY secret is not set."
+            echo "::error::Generate one at https://app.codemod.com/settings/api-keys"
+            echo "::error::Add it at https://github.com/${{ github.repository }}/settings/secrets/actions"
+            exit 1
+          fi
+          npx codemod@latest publish
