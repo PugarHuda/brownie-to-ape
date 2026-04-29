@@ -1,0 +1,22 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  jssg-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run jssg fixture suite
+        run: npx codemod@latest jssg test -l python ./scripts/codemod.ts ./tests/fixtures
+
+      - name: Validate workflow schema
+        run: npx codemod@latest workflow validate -w workflow.yaml

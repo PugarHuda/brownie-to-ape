@@ -30,9 +30,7 @@ Thumbs.db
 
 # Package bundles
 *.tar.gz
-*.tgz 
-# Workflow files temporarily untracked — needs `gh auth refresh -s workflow` then `git add -f .github/workflows/`
-.github/workflows/
+*.tgz
 
 # Benchmark working dirs (clones); keep results.md only
 benchmark/repos/
