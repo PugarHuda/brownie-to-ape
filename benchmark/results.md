@@ -5,10 +5,10 @@ Brownie repo. Times are wall-clock from `time` around the workflow run.
 
 | Repo | .py files | Brownie patterns (before) | Files modified | Patterns auto-migrated | False positives | Wall-clock |
 |---|---:|---:|---:|---:|---:|---:|
-| [token-mix](https://github.com/brownie-mix/token-mix) | 5 | 58 | 4 | ~55 | 0 (manual audit) | 24171ms |
-| [brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 6 | 17 | 5 | ~27 | 0 (manual audit) | 25076ms |
-| [smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 7 | 34 | 5 | ~45 | 0 (manual audit) | 17459ms |
-| [aave_brownie_py_freecode](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 5 | 13 | 4 | ~27 | 0 (manual audit) | 13626ms |
+| [token-mix](https://github.com/brownie-mix/token-mix) | 5 | 58 | 4 | ~55 | 0 (manual audit) | 45760ms |
+| [brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 6 | 17 | 5 | ~27 | 0 (manual audit) | 15427ms |
+| [smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 7 | 34 | 5 | ~45 | 0 (manual audit) | 15998ms |
+| [aave_brownie_py_freecode](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 5 | 13 | 4 | ~27 | 0 (manual audit) | 15456ms |
 
 > **Notes:**
 > - "Brownie patterns (before)" = imports + tx-dicts + show_active + brownie.reverts (rough surface count, undercounts compound patterns).

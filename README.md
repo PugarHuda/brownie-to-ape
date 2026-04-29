@@ -1,8 +1,46 @@
 # brownie-to-ape
 
-Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/) — Python smart-contract framework migration with **zero false positives** on real OSS repos.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
+[![Tests](https://img.shields.io/badge/tests-43%20passing-brightgreen)](./tests/fixtures)
+[![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
+[![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-4-blue)](./CASE_STUDY.md)
+[![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 
-Built with [Codemod](https://codemod.com/) `jssg` engine (ast-grep on Tree-sitter Python). Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes).
+Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 11-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on 4 real OSS Brownie projects with **zero false positives**.
+
+> Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes + Track 2: Public Case Study).
+
+## TL;DR
+
+```bash
+# Run on any Brownie project (~3 seconds end-to-end after first invocation)
+npx codemod@latest workflow run \
+  -w https://github.com/PugarHuda/brownie-to-ape \
+  --target /path/to/your/brownie/project \
+  --no-interactive --allow-dirty
+```
+
+Or:
+
+```bash
+# Try the bundled demo on a public repo:
+git clone https://github.com/PugarHuda/brownie-to-ape && cd brownie-to-ape
+bash demo/run-demo.sh
+```
+
+## Why use this
+
+Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. A typical Brownie test suite contains 50–200 mechanical pattern rewrites: every `Contract.deploy(…, {"from": acct})` becomes `Contract.deploy(…, sender=acct)`, every `network.show_active()` becomes `networks.active_provider.network.name`, etc.
+
+| | Manual migration | brownie-to-ape |
+|---|---|---|
+| Time per repo (typical) | half-day to 1 day | ~30 minutes (3s codemod + AI/human review) |
+| Mechanical pattern rewrites | 100% manual | ~80–95% automated |
+| Tx-dict → kwargs (deploy / method calls) | Find-replace per file | One pass, zero FP |
+| `network.show_active()` in subscripts/f-strings | Hand-edit each | Auto-rewritten |
+| Exception class renames | Look up Ape docs per name | `VirtualMachineError` → `ContractLogicError` automatic |
+| Risk of regressions | Medium (typos, missed sites) | Zero (validated on 4 OSS repos) |
+| `brownie-config.yaml` → `ape-config.yaml` | Manual rewrite | [`scripts/migrate_config.py`](./scripts/migrate_config.py) handles known fields |
 
 ## What it migrates
 

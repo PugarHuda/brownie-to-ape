@@ -356,6 +356,17 @@ const codemod: Codemod<Python> = async (root) => {
   // ────────────────────────────────────────────────────────────────────
   const calls = rootNode.findAll({ rule: { kind: "call" } });
   for (const callNode of calls) {
+    // Require method-call shape: callee must be an attribute access
+    // (`obj.method(...)` or `Class.deploy(...)`). This excludes plain
+    // function calls like `OrderedDict({...})`, `dict({...})`,
+    // `defaultdict({...})`, `partial(f, {...})`, or user helper functions
+    // that happen to take a dict — those expect a real dict, not kwargs.
+    // Every Brownie tx-dict in real-world code is a method call on a
+    // contract reference; this guard preserves zero-FP without
+    // sacrificing coverage on validated repos.
+    const funcNode = callNode.field("function");
+    if (!funcNode || funcNode.kind() !== "attribute") continue;
+
     const argList = callNode.field("arguments");
     if (!argList) continue;
 
