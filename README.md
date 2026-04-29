@@ -30,6 +30,10 @@ git clone https://github.com/PugarHuda/brownie-to-ape && cd brownie-to-ape
 bash demo/run-demo.sh
 ```
 
+> 📋 **Hackathon evaluator?** See [EVALUATOR.md](./EVALUATOR.md) for the
+> 3-step evaluation walkthrough (~15–20 min total): codemod run → AI
+> cleanup → `ape compile && ape test` verification.
+
 ## Why use this
 
 Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. A typical Brownie test suite contains 50–200 mechanical pattern rewrites: every `Contract.deploy(…, {"from": acct})` becomes `Contract.deploy(…, sender=acct)`, every `network.show_active()` becomes `networks.active_provider.network.name`, etc.
