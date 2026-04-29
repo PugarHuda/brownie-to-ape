@@ -7,6 +7,27 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.3] — 2026-04-29
+
+Final QA pass before registry publish.
+
+### Added
+- **4 more negative edge-case tests** (52–55):
+  - Multi-line import with inline comments (comments inside import are
+    dropped on rewrite — documents acceptable data loss).
+  - Multiple `from brownie import` lines in same file (each fires Pass 1
+    independently; output is multiple `from ape import` lines).
+  - `accounts.add(...)` inside lambda + list comprehension (parent
+    kind is `lambda` / `for_in_clause`, not `expression_statement` /
+    `assignment` — Pass 7's safe-context guard correctly skips).
+  - File with "brownie" only in string literals / comments (no AST
+    brownie nodes — early-exit text check passes but no transform fires;
+    output equals input).
+- **`tests/test_migrate_config.py`** — 13 unit tests for
+  `scripts/migrate_config.py`'s `translate()` function.
+- **`.gitattributes`** — normalize all text files to LF on commit.
+  Eliminates the "LF will be replaced by CRLF" warnings on Windows.
+
 ## [0.7.2] — 2026-04-29
 
 Coverage extension + edge-case hardening + adoption polish.

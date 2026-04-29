@@ -1,0 +1,24 @@
+# Normalize all text files to LF on commit. Avoids "LF will be replaced
+# by CRLF" warnings on Windows clones and keeps diffs clean across
+# platforms.
+
+* text=auto eol=lf
+
+# Shell scripts and configs that MUST stay LF
+*.sh        text eol=lf
+*.py        text eol=lf
+*.ts        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+.gitignore  text eol=lf
+.editorconfig text eol=lf
+LICENSE     text eol=lf
+
+# Windows-only files keep CRLF
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Binary / no normalization
+*.cast      binary
