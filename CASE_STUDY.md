@@ -44,20 +44,25 @@ I categorized Brownie patterns into 8 groups by transform feasibility:
 
 Groups 1–6 are auto-migrated. Group 7 is auto-flagged via a TODO comment so the user knows where to look. Group 8 is left alone (FN by design — automation here would risk FPs).
 
-## 3. Architecture: 6-pass jssg transform
+## 3. Architecture: 9-pass jssg transform
 
-Codemod's `jssg` engine runs JavaScript/TypeScript code that operates on Tree-sitter ASTs. The codemod has 6 ordered passes (single file, ~290 LOC):
+Codemod's `jssg` engine runs JavaScript/TypeScript code that operates on Tree-sitter ASTs. The codemod has 9 ordered passes (single file, ~370 LOC):
 
 ```
 Pass 1:  from brownie import X, Y, Z  →  from ape import X', Y' (+ TODO for dropped Z)
 Pass 2a: brownie.network.show_active()  →  networks.active_provider.network.name
 Pass 2b: bare network.show_active()  →  networks.active_provider.network.name
+Pass 2c: exceptions.VirtualMachineError  →  exceptions.ContractLogicError (+ qualified form)
 Pass 3:  brownie.<known_attr>  →  ape.<attr>  (whitelist, skips inside dict literals)
-Pass 3b: import brownie  →  import ape  (only if Pass 3 fired)
+Pass 3b: import brownie  →  import ape  (only if Pass 3 / 2c qualified rewrote)
 Pass 4:  tx-dict {"from": x, ...}  →  kwargs sender=x, ...  (whitelist + spread guard)
 Pass 5:  chain.mine(N)  →  chain.mine(num_blocks=N)  (positional → kwarg)
 Pass 6:  chain.sleep(N) as a statement  →  chain.pending_timestamp += N
+Pass 7:  accounts.add(pk)  →  accounts.add(pk)  # TODO: Ape: import_account_from_private_key(...)
+Pass 8:  Brownie's def isolate(fn_isolation): pass  →  + TODO comment above (Ape has chain.isolate())
 ```
+
+A supplemental Python helper (`scripts/migrate_config.py`) converts `brownie-config.yaml` → `ape-config.yaml` for known fields (networks, solidity remappings/version, dependencies, dotenv) and emits TODO comments for unknown sections. The legacy YAML is renamed to `.legacy` so Ape doesn't accidentally pick it up.
 
 ### Why this ordering?
 
@@ -130,7 +135,7 @@ I tested on two repos representing typical Brownie project shapes — a token tu
 
 ## 6. Test Suite
 
-26 fixture tests (input/expected pairs), all passing. They cover:
+33 fixture tests (input/expected pairs), all passing. They cover:
 
 | # | Fixture | What it asserts |
 |---|---|---|
@@ -158,16 +163,22 @@ I tested on two repos representing typical Brownie project shapes — a token tu
 | 24 | chain-mine-already-kwarg | `chain.mine(num_blocks=5)` and `chain.mine()` left alone |
 | 25 | chain-sleep-statement | `chain.sleep(60)` → `chain.pending_timestamp += 60` |
 | 26 | chain-sleep-in-expression | `result = chain.sleep(60)` left alone (semantic risk) |
+| 27 | exceptions-bare | `exceptions.VirtualMachineError` → `exceptions.ContractLogicError` (after rename in import) |
+| 28 | exceptions-qualified | `brownie.exceptions.VirtualMachineError` → `ape.exceptions.ContractLogicError` |
+| 29 | exceptions-unknown-untouched | `exceptions.SomeUnknownExc` left alone (only known names mapped) |
+| 30 | accounts-add-statement | Trailing TODO comment on `accounts.add(...)` in safe contexts |
+| 31 | accounts-add-in-expression | `if accounts.add(pk) is not None:` left alone (no inline comment) |
+| 32 | isolate-fixture | TODO comment above `def isolate(fn_isolation): pass` |
+| 33 | isolate-customized-untouched | User-customized isolate fixture with snapshot/revert NOT flagged |
 
 ```bash
 $ codemod jssg test -l python ./scripts/codemod.ts ./tests/fixtures
-running 26 tests
+running 33 tests
 test 01-basic-imports                 ... ok
-test 02-import-with-contract          ... ok
 […]
-test 26-chain-sleep-in-expression     ... ok
+test 33-isolate-customized-untouched  ... ok
 
-test result: ok. 26 passed; 0 failed; 0 ignored
+test result: ok. 33 passed; 0 failed; 0 ignored
 ```
 
 ## 7. AI vs Manual Effort Breakdown

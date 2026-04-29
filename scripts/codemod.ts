@@ -12,12 +12,22 @@ const IMPORT_NAME_RENAMES: Record<string, string> = {
 const IMPORT_NAMES_DROP: Set<string> = new Set([
   "Contract",   // → project.<ContractName>
   "Wei",        // → ape.utils.convert
-  "exceptions", // ape.exceptions has different class names
+  // "exceptions" is intentionally kept — Ape also has `ape.exceptions`.
+  // Known class names are renamed by the exceptions-rewrite pass below.
   "interface",  // Brownie interface object — Ape pattern differs
   "rpc",        // Different test backend in Ape
   "history",    // Different transaction history API
   "web3",       // Ape exposes via networks.active_provider.web3
 ]);
+
+// Brownie exception class names → Ape equivalents. Used to rewrite both
+// bare `exceptions.X` references (after `from brownie import exceptions`)
+// and qualified `brownie.exceptions.X` references.
+const EXCEPTION_MAP: Record<string, string> = {
+  VirtualMachineError: "ContractLogicError",
+  RPCRequestError: "RPCError",
+  ContractNotFound: "ContractNotFoundError",
+};
 
 // Brownie built-in module identifiers that DO have an Ape equivalent (after
 // IMPORT_NAME_RENAMES). Used to distinguish "framework imports" from
@@ -196,11 +206,44 @@ const codemod: Codemod<Python> = async (root) => {
   }
 
   // ────────────────────────────────────────────────────────────────────
+  // Transform 2c: brownie.exceptions.X → ape.exceptions.<MappedX>
+  //               exceptions.X → exceptions.<MappedX>  (after Pass 1 keeps
+  //                 `exceptions` in the import list)
+  // Only rewrites known exception names (EXCEPTION_MAP). Unknown names are
+  // left alone — keeps zero-FP discipline.
+  // ────────────────────────────────────────────────────────────────────
+  let didRewriteBrownieAttr = false;
+
+  const qualifiedExceptions = rootNode.findAll({
+    rule: { pattern: "brownie.exceptions.$NAME" },
+  });
+  for (const node of qualifiedExceptions) {
+    const nameField = node.field("attribute");
+    if (!nameField) continue;
+    const name = nameField.text();
+    const mapped = EXCEPTION_MAP[name];
+    if (!mapped) continue;
+    edits.push(node.replace(`ape.exceptions.${mapped}`));
+    didRewriteBrownieAttr = true;
+  }
+
+  const bareExceptions = rootNode.findAll({
+    rule: { pattern: "exceptions.$NAME" },
+  });
+  for (const node of bareExceptions) {
+    const nameField = node.field("attribute");
+    if (!nameField) continue;
+    const name = nameField.text();
+    const mapped = EXCEPTION_MAP[name];
+    if (!mapped || mapped === name) continue;
+    edits.push(node.replace(`exceptions.${mapped}`));
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   // Transform 3: generic `brownie.<attr>` → `ape.<attr>` for whitelisted attrs.
   // Skips occurrences inside dictionary literals — those are handled when the
   // surrounding tx-dict is rewritten in Transform 4 (avoids edit conflicts).
   // ────────────────────────────────────────────────────────────────────
-  let didRewriteBrownieAttr = false;
   const brownieAttrs = rootNode.findAll({
     rule: { pattern: "brownie.$ATTR" },
   });
@@ -353,6 +396,76 @@ const codemod: Codemod<Python> = async (root) => {
     const arg = argChildren[0];
     if (arg.kind() === "keyword_argument") continue;
     edits.push(parent.replace(`chain.pending_timestamp += ${arg.text()}`));
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 7: append inline TODO comment to `accounts.add(...)` calls.
+  // Brownie's accounts.add(pk) → Ape's accounts.import_account_from_private_key(
+  //   alias, passphrase, key) — different signature, can't auto-translate.
+  // Only safe to add a trailing comment when the call sits at end-of-line:
+  // expression_statement context, or RHS of an assignment.
+  // ────────────────────────────────────────────────────────────────────
+  const ACCOUNTS_ADD_TODO =
+    "  # TODO(brownie-to-ape): Ape uses accounts.import_account_from_private_key(alias, passphrase, key)";
+  const accountsAddCalls = rootNode.findAll({
+    rule: { pattern: "accounts.add($$$ARGS)" },
+  });
+  for (const callNode of accountsAddCalls) {
+    const parent = callNode.parent();
+    if (!parent) continue;
+    const callText = callNode.text();
+    if (callText.includes("# TODO(brownie-to-ape)")) continue;
+    if (parent.kind() === "expression_statement") {
+      edits.push(callNode.replace(callText + ACCOUNTS_ADD_TODO));
+    } else if (parent.kind() === "assignment") {
+      const rhs = parent.field("right");
+      if (rhs && rhs.text() === callText) {
+        edits.push(callNode.replace(callText + ACCOUNTS_ADD_TODO));
+      }
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 8: detect Brownie's `def isolate(fn_isolation): pass` fixture
+  // and prepend a TODO comment. Ape provides chain.isolate() and per-test
+  // isolation by default, so this fixture is dead code in Ape.
+  // Only fires when the function body is exactly `pass` (or pass + docstring)
+  // — preserves user-customized isolate fixtures untouched.
+  // ────────────────────────────────────────────────────────────────────
+  const ISOLATE_TODO =
+    "# TODO(brownie-to-ape): Ape has built-in per-test chain isolation via chain.isolate(). This fixture can be removed.";
+  const isolateFixtures = rootNode.findAll({
+    rule: {
+      kind: "function_definition",
+      has: { field: "name", regex: "^isolate$" },
+    },
+  });
+  for (const node of isolateFixtures) {
+    const params = node.field("parameters");
+    if (!params || !params.text().includes("fn_isolation")) continue;
+    const body = node.field("body");
+    if (!body) continue;
+    // Body must be just `pass` (with optional docstring) — anything else may
+    // be user-customized logic we shouldn't flag.
+    const stmts = body
+      .children()
+      .filter((c) => !["block", ":", "comment"].includes(c.kind()));
+    const allTrivial = stmts.every((s) => {
+      if (s.kind() === "pass_statement") return true;
+      if (s.kind() === "expression_statement") {
+        const inner = s.children().find((c) => c.kind() === "string");
+        return !!inner; // bare docstring
+      }
+      return false;
+    });
+    if (!allTrivial || stmts.length === 0) continue;
+    // Find the enclosing decorated_definition to also include decorators in
+    // the comment placement.
+    const wrapped = node.parent();
+    const target =
+      wrapped && wrapped.kind() === "decorated_definition" ? wrapped : node;
+    if (target.text().includes("# TODO(brownie-to-ape)")) continue;
+    edits.push(target.replace(`${ISOLATE_TODO}\n${target.text()}`));
   }
 
   if (edits.length === 0) return null;

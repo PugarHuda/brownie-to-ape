@@ -18,6 +18,10 @@ Built with [Codemod](https://codemod.com/) `jssg` engine (ast-grep on Tree-sitte
 | 8 | Tx-dict with trailing kwarg | `deploy(addr, {"from": x}, publish_source=...)` | `deploy(addr, sender=x, publish_source=...)` |
 | 9 | `chain.mine(N)` positional arg | `chain.mine(10)` | `chain.mine(num_blocks=10)` |
 | 10 | `chain.sleep(N)` as a statement | `chain.sleep(60)` | `chain.pending_timestamp += 60` |
+| 11 | Brownie exception class names | `exceptions.VirtualMachineError`, `brownie.exceptions.VirtualMachineError` | `exceptions.ContractLogicError`, `ape.exceptions.ContractLogicError` |
+| 12 | `accounts.add(pk)` inline TODO | `accounts.add(pk)` | `accounts.add(pk)  # TODO: Ape uses accounts.import_account_from_private_key(...)` |
+| 13 | Brownie's `isolate(fn_isolation): pass` fixture | `def isolate(fn_isolation): pass` | TODO comment above the decorator (Ape has `chain.isolate()` built-in) |
+| Bonus | YAML config helper (`scripts/migrate_config.py`) | `brownie-config.yaml` | `ape-config.yaml` (networks, solidity, dependencies translated; legacy file preserved) |
 
 ## Install & Run
 
@@ -43,7 +47,7 @@ Tested on three Brownie OSS projects covering different shapes (token tutorial, 
 | [PatrickAlphaC/brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 `.py` | ~21 (5 imports, 8 tx-dicts, 8 show_active) | **0** |
 | [PatrickAlphaC/smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 `.py` | ~30 (5 imports, 13 tx-dicts, 9 show_active) | **0** |
 
-**Combined: 14/18 files modified across 3 OSS repos. ~113 patterns auto-migrated. 0 false positives.**
+**Combined: 14/18 files modified across 3 OSS repos. ~120 patterns auto-migrated (incl. 3 exception renames + isolate TODO + accounts.add TODOs). 0 false positives.**
 
 See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up.
 
@@ -74,13 +78,20 @@ These patterns are flagged with `# TODO(brownie-to-ape): …` for manual review 
 
 ```
 brownie-to-ape/
-├── codemod.yaml           # package metadata
-├── workflow.yaml          # single-step jssg workflow
-├── scripts/codemod.ts     # the transform (4 passes, ~200 LOC)
-├── tests/fixtures/        # 19 input/expected test pairs, 100% passing
+├── codemod.yaml                # package metadata
+├── workflow.yaml               # single-step jssg workflow
+├── scripts/
+│   ├── codemod.ts              # the transform (9 passes, ~370 LOC)
+│   └── migrate_config.py       # supplemental YAML config converter
+├── tests/fixtures/             # 33 input/expected test pairs, 100% passing
+├── .github/workflows/
+│   ├── test.yml                # CI fixture suite on push/PR
+│   └── publish.yml             # auto-publish to registry on tag
 ├── README.md
-├── CASE_STUDY.md          # hackathon submission write-up
-└── CLAUDE.md              # project context for Claude Code
+├── CASE_STUDY.md               # hackathon submission write-up
+├── SUBMISSION.md               # pre-filled DoraHacks BUIDL form
+├── TRACK_3_ISSUE_DRAFT.md      # ApeWorX issue body for Track 3
+└── CLAUDE.md                   # project context for Claude Code
 ```
 
 ## Development
