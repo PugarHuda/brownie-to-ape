@@ -7,6 +7,29 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.1] — 2026-04-29
+
+QA hardening + ergonomics polish.
+
+### Added
+- **Test 45**: `convert` import deduplication. When the file already
+  has `from ape.utils import convert`, Pass 9's auto-injection skips
+  to avoid duplicate imports.
+- **Test 46**: malformed Python file robustness. Tree-sitter is
+  error-tolerant; the codemod still applies transforms to well-formed
+  parts and doesn't crash on syntax errors.
+- DEMO.md sections: `--dry-run` preview, per-file stats JSON example,
+  visual demo (asciinema cast), reproducible benchmark, quick rollback.
+- README rollback one-liner + demo cast playback section.
+- Cleaned `package.json` with practical npm scripts (`test`,
+  `validate`, `benchmark`, `demo`, `render-cast`, `publish:codemod`).
+
+### Fixed
+- Pass 9 (Wei → convert) checks for an existing
+  `from ape.utils import convert` before adding it to `preludeAdditions`.
+  Prevents duplicate imports in files that have been partially migrated
+  by hand.
+
 ## [0.7.0] — 2026-04-29
 
 Wei auto-rewrite, Web3.py adjacency, ergonomics polish.
