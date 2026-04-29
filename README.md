@@ -53,7 +53,7 @@ Tested on four Brownie OSS projects covering different shapes (token tutorial, s
 
 **Combined: 18/23 files modified across 4 OSS repos. ~137 patterns auto-migrated. 0 false positives.**
 
-See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up.
+See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up, [DEMO.md](./DEMO.md) for curated before/after examples, and [`benchmark/results.md`](./benchmark/results.md) for timed runs across all four repos.
 
 ## Zero-False-Positive Guards
 
@@ -85,13 +85,18 @@ brownie-to-ape/
 ├── codemod.yaml                # package metadata
 ├── workflow.yaml               # single-step jssg workflow
 ├── scripts/
-│   ├── codemod.ts              # the transform (9 passes, ~370 LOC)
-│   └── migrate_config.py       # supplemental YAML config converter
-├── tests/fixtures/             # 33 input/expected test pairs, 100% passing
+│   ├── codemod.ts              # the transform (11 passes, ~510 LOC)
+│   ├── migrate_config.py       # supplemental YAML config converter
+│   └── benchmark.sh            # multi-repo perf benchmark
+├── demo/
+│   └── run-demo.sh             # self-contained demo (asciinema-friendly)
+├── benchmark/results.md        # latest benchmark output
+├── tests/fixtures/             # 38 input/expected test pairs, 100% passing
 ├── .github/workflows/
 │   ├── test.yml                # CI fixture suite on push/PR
 │   └── publish.yml             # auto-publish to registry on tag
 ├── README.md
+├── DEMO.md                     # curated before/after examples
 ├── CASE_STUDY.md               # hackathon submission write-up
 ├── SUBMISSION.md               # pre-filled DoraHacks BUIDL form
 ├── TRACK_3_ISSUE_DRAFT.md      # ApeWorX issue body for Track 3

@@ -33,3 +33,6 @@ Thumbs.db
 *.tgz 
 # Workflow files temporarily untracked — needs `gh auth refresh -s workflow` then `git add -f .github/workflows/`
 .github/workflows/
+
+# Benchmark working dirs (clones); keep results.md only
+benchmark/repos/

@@ -211,6 +211,34 @@ A migration that previously took **half a day to a full day** of mechanical refa
 - **Semantic analysis is JS/TS + Python only** in OSS jssg (Rust/Go/Java are enterprise). For Brownie→Ape this is fine — Python's symbol resolution via ruff is built in. For framework migrations in Rust (Anchor 0.30, Solana programs) the same approach would be more limited.
 - **Workflow YAML's `--allow-dirty` and `--no-interactive` flags** are essential for CI / AI-agent invocation. The default mode prompts for confirmation on dirty git state.
 
+## 8.5. Performance benchmark
+
+Bundled benchmark script ([`scripts/benchmark.sh`](./scripts/benchmark.sh))
+runs the codemod on all four reference repos from a freshly-cloned state
+and reports wall-clock times. Latest run:
+
+| Repo | .py files | Brownie patterns | Files modified | Wall-clock |
+|---|---:|---:|---:|---:|
+| [token-mix](https://github.com/brownie-mix/token-mix) | 5 | 58 | 4 | ~24 s |
+| [brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 6 | 17 | 5 | ~25 s |
+| [smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 7 | 34 | 5 | ~17 s |
+| [aave_brownie_py_freecode](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 5 | 13 | 4 | ~14 s |
+
+Wall-clock includes `npx` startup (downloading + spawning the Codemod CLI on
+first invocation). The Codemod workflow itself reports **~3 seconds per
+repo** end-to-end. After warmup, sequential repo runs share the cached CLI
+and drop to ~5 s wall-clock per repo. See [`benchmark/results.md`](./benchmark/results.md)
+for the latest numbers (regenerable via `bash scripts/benchmark.sh`).
+
+For curated before/after examples on each transform pass, see
+[`DEMO.md`](./DEMO.md). For a self-contained reproducible demo:
+
+```bash
+bash demo/run-demo.sh
+# or, recording with asciinema:
+asciinema rec demo.cast -c "bash demo/run-demo.sh"
+```
+
 ## 9. Reproducing this Case Study
 
 ```bash
