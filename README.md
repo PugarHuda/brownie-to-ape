@@ -1,5 +1,6 @@
 # brownie-to-ape
 
+[![CI](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml/badge.svg)](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
 [![Tests](https://img.shields.io/badge/tests-55%20jssg%20%2B%2013%20unit-brightgreen)](./tests)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
