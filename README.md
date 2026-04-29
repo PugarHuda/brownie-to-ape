@@ -1,10 +1,10 @@
 # brownie-to-ape
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
-[![Tests](https://img.shields.io/badge/tests-46%20passing-brightgreen)](./tests/fixtures)
+[![Tests](https://img.shields.io/badge/tests-51%20passing-brightgreen)](./tests/fixtures)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
 [![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-4-blue)](./CASE_STUDY.md)
-[![Version](https://img.shields.io/badge/version-0.7.0-blue)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.7.2-blue)](./CHANGELOG.md)
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 
 Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 12-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on 4 real OSS Brownie projects with **zero false positives**.
@@ -130,7 +130,7 @@ brownie-to-ape/
 ├── demo/
 │   └── run-demo.sh             # self-contained demo (asciinema-friendly)
 ├── benchmark/results.md        # latest benchmark output
-├── tests/fixtures/             # 38 input/expected test pairs, 100% passing
+├── tests/fixtures/             # 51 input/expected test pairs, 100% passing
 ├── .github/workflows/
 │   ├── test.yml                # CI fixture suite on push/PR
 │   └── publish.yml             # auto-publish to registry on tag
@@ -180,6 +180,89 @@ A pre-recorded asciinema cast at [`demo/demo.cast`](./demo/demo.cast)
 ```bash
 asciinema play demo/demo.cast
 ```
+
+## FAQ
+
+**Q: Will running this break my codebase?**
+A: No. Every change is in your working tree until you `git commit`. If
+the diff looks wrong, run `git checkout -- '*.py'` to discard. The
+codemod is engineered for zero false positives — validated on 4 OSS
+repos.
+
+**Q: I don't trust it. Can I preview first?**
+A: Yes. `bash scripts/preview.sh /path/to/your/project` runs in dry-run
+mode and prints a per-file edit summary without modifying anything.
+Or use `--dry-run` directly with `codemod workflow run`.
+
+**Q: My project uses Brownie + web3.py heavily. Will this migrate
+web3.py too?**
+A: Partially. `Web3.toWei(...)` and `Web3.fromWei(...)` get inline
+TODO comments pointing to Ape's `convert(...)`. Other web3.py patterns
+(`web3.eth.X`) are untouched — they're a different framework upgrade
+([web3.py v6 → v7](https://web3py.readthedocs.io/en/stable/v7_migration.html))
+that warrants its own codemod.
+
+**Q: How long does manual cleanup take after the codemod?**
+A: Most projects: 5–30 minutes. The remaining work is ~5–20% of the
+migration: replace contract artifact references with `project.<Name>`,
+configure accounts via `ape accounts import`, run `ape compile` and
+fix any compile errors. The codemod's TODO comments mark every spot
+that needs attention.
+
+**Q: Do I have to use the bundled YAML config converter?**
+A: Optional but recommended. `python scripts/migrate_config.py .`
+translates `brownie-config.yaml` to `ape-config.yaml` for known
+fields. If you'd rather convert the YAML manually, just don't run it
+— the codemod doesn't depend on it.
+
+**Q: Why is my first run so slow?**
+A: `npx` downloads the Codemod CLI on first invocation (~10–20s).
+Subsequent runs are ~3 seconds. Install once with `npm i -g codemod`
+to skip this.
+
+**Q: I have feature X (Curve / Yearn / etc.) in my Brownie repo. Will
+it work?**
+A: The codemod only transforms Brownie SDK patterns — it doesn't
+touch protocol-specific code. Validated repos already cover token
+contracts, fund-me oracles, lottery + VRF, and Aave DeFi integration.
+If you hit a Brownie pattern that isn't migrated, file a feature
+request.
+
+## Troubleshooting
+
+**Symptom:** `codemod: command not found`
+- Use `npx codemod@latest …` (no global install needed).
+- Or install once: `npm i -g codemod`.
+
+**Symptom:** `codemod` runs but no files change.
+- The target may not be a Brownie project — only files containing the
+  substring `brownie` are processed.
+- Run `bash scripts/preview.sh <target>` to see whether anything is
+  detected.
+
+**Symptom:** `from ape import …` line is missing some name.
+- The codemod intentionally drops names that have no direct Ape
+  equivalent (contract artifacts, `Wei`, `interface`, etc.). Look for
+  `# TODO(brownie-to-ape):` comments above the rewritten import.
+
+**Symptom:** `ape compile` fails with `NameError: contract not defined`.
+- Brownie auto-injects contract artifacts into every namespace; Ape
+  doesn't. Replace `MyContract.deploy(...)` with
+  `project.MyContract.deploy(...)`. The codemod's TODO comment marks
+  these.
+
+**Symptom:** `pytest` fails with `AttributeError: module 'ape.exceptions'
+has no attribute 'X'`.
+- The codemod maps `VirtualMachineError` → `ContractLogicError` and a
+  few others, but unknown exception names need manual lookup. Check
+  the [Ape exceptions docs](https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html).
+
+**Symptom:** Output has duplicate `from ape.utils import convert`.
+- Bug — file an issue. The dedup check (Pass 9) should catch this.
+
+**Symptom:** Codemod CLI hangs in CI.
+- Pass `--no-interactive --allow-dirty` flags. The CLI prompts for
+  confirmation by default if the target isn't a clean git tree.
 
 ## License
 

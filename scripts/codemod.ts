@@ -40,6 +40,16 @@ const BROWNIE_BUILTIN_NAMES: Set<string> = new Set([
   "project",
 ]);
 
+// Names that move from `from brownie import …` to `from ape.utils import …`
+// These are constants / utilities that Ape exposes under a different
+// module path. Imports that contain only these names produce a single
+// `from ape.utils import …` line; mixed imports produce both
+// `from ape.utils import …` (for these) and `from ape import …` (for
+// the rest).
+const IMPORT_NAMES_TO_APE_UTILS: Set<string> = new Set([
+  "ZERO_ADDRESS",
+]);
+
 // Heuristic: a name starting with uppercase that isn't a known Brownie
 // built-in is almost always a user-defined contract artifact (Brownie
 // auto-injects these). Ape requires `project.<Name>` access, so we drop
@@ -47,6 +57,7 @@ const BROWNIE_BUILTIN_NAMES: Set<string> = new Set([
 function isLikelyContractName(name: string): boolean {
   if (BROWNIE_BUILTIN_NAMES.has(name)) return false;
   if (IMPORT_NAMES_DROP.has(name)) return false;
+  if (IMPORT_NAMES_TO_APE_UTILS.has(name)) return false;
   return /^[A-Z]/.test(name);
 }
 
@@ -193,8 +204,15 @@ const codemod: Codemod<Python> = async (root) => {
     if (imported.length === 0) continue;
 
     const renamed: string[] = [];
+    const movedToUtils: string[] = [];
     const dropped: string[] = [];
     for (const item of imported) {
+      if (IMPORT_NAMES_TO_APE_UTILS.has(item.name)) {
+        movedToUtils.push(
+          item.alias ? `${item.name} as ${item.alias}` : item.name,
+        );
+        continue;
+      }
       if (IMPORT_NAMES_DROP.has(item.name) || isLikelyContractName(item.name)) {
         // Preserve full "Name as Alias" form so the user can grep for either.
         dropped.push(item.alias ? `${item.name} as ${item.alias}` : item.name);
@@ -204,14 +222,24 @@ const codemod: Codemod<Python> = async (root) => {
       renamed.push(item.alias ? `${newName} as ${item.alias}` : newName);
     }
 
+    const lines: string[] = [];
+    if (dropped.length > 0) {
+      lines.push(
+        `# TODO(brownie-to-ape): no direct Ape equivalent for: ${dropped.join(", ")}`,
+      );
+    }
+    if (movedToUtils.length > 0) {
+      lines.push(`from ape.utils import ${movedToUtils.join(", ")}`);
+    }
+    if (renamed.length > 0) {
+      lines.push(`from ape import ${renamed.join(", ")}`);
+    }
     let replacement: string;
-    if (renamed.length === 0) {
-      replacement = `# TODO(brownie-to-ape): no direct Ape equivalent for: ${dropped.join(", ")}\n# ${node.text()}`;
+    if (lines.length === 0 || (lines.length === 1 && dropped.length > 0)) {
+      // All names dropped — comment out the original import too.
+      replacement = `${lines.join("\n")}\n# ${node.text()}`;
     } else {
-      replacement = `from ape import ${renamed.join(", ")}`;
-      if (dropped.length > 0) {
-        replacement = `# TODO(brownie-to-ape): no direct Ape equivalent for: ${dropped.join(", ")}\n${replacement}`;
-      }
+      replacement = lines.join("\n");
     }
     edits.push(node.replace(replacement));
   }

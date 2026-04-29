@@ -7,6 +7,35 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.2] — 2026-04-29
+
+Coverage extension + edge-case hardening + adoption polish.
+
+### Added
+- **`ZERO_ADDRESS` move-to-utils rewrite**. Brownie's
+  `from brownie import ZERO_ADDRESS` becomes
+  `from ape.utils import ZERO_ADDRESS` instead of being dropped via
+  the contract-name heuristic. New `IMPORT_NAMES_TO_APE_UTILS` set in
+  the codemod for any future similar moves.
+- **5 new edge-case tests** (47–51): ZERO_ADDRESS with other names,
+  ZERO_ADDRESS only, walrus operator with `accounts.add`, async/await
+  wrapping a tx-dict, try/except guarded import.
+- **`scripts/preview.sh`** — wrapper around `codemod workflow run
+  --dry-run` that parses the per-file stats JSON and prints an
+  aggregated summary (total edits, Wei rewrites, brownie.attr renames,
+  unknown exceptions). Lets users see what would change without
+  modifying any files.
+- **`LICENSE`** (MIT, was previously only declared in codemod.yaml),
+  **`.editorconfig`**, **`SECURITY.md`**.
+- **README FAQ section** — 7 common questions with concrete answers.
+- **README Troubleshooting section** — 6 symptom→fix entries.
+
+### Changed
+- Pass 1 import-rewrite logic refactored to support **three
+  destinations** per imported name: `from ape import …`,
+  `from ape.utils import …`, or dropped (with TODO). Mixed imports
+  produce two adjacent `from …` lines.
+
 ## [0.7.1] — 2026-04-29
 
 QA hardening + ergonomics polish.
