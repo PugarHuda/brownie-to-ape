@@ -2,8 +2,9 @@
 from ape import accounts
 
 
+from ape.utils import convert
 def safe_amount():
     # In a complex expression — adding trailing comment would break.
-    if Wei("1 ether") < some_threshold:
+    if convert("1 ether", int) < some_threshold:
         return None
-    return [Wei("1 ether"), Wei("2 ether")]
+    return [convert("1 ether", int), convert("2 ether", int)]

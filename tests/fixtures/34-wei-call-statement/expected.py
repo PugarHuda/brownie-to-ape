@@ -2,7 +2,8 @@
 from ape import accounts
 
 
+from ape.utils import convert
 def get_amount():
-    amount = Wei("1 ether")  # TODO(brownie-to-ape): Wei("X") -> from ape.utils import convert; convert("X", int)
-    fee = Wei("100 gwei")  # TODO(brownie-to-ape): Wei("X") -> from ape.utils import convert; convert("X", int)
+    amount = convert("1 ether", int)
+    fee = convert("100 gwei", int)
     return amount, fee

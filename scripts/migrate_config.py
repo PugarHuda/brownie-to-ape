@@ -153,14 +153,44 @@ def main(argv: list[str]) -> int:
     src = project / "brownie-config.yaml"
     if not src.exists():
         sys.stdout.write(
-            f"No brownie-config.yaml at {src} — skipping config migration.\n"
+            f"No brownie-config.yaml at {src} - skipping config migration.\n"
         )
         return 0
 
-    with src.open("r", encoding="utf-8") as f:
-        brownie_cfg = yaml.safe_load(f) or {}
+    try:
+        with src.open("r", encoding="utf-8") as f:
+            brownie_cfg = yaml.safe_load(f) or {}
+    except OSError as e:
+        sys.stderr.write(
+            f"ERROR: cannot read {src}: {e}\n"
+            f"  Check file permissions and that the path resolves correctly.\n"
+        )
+        return 3
+    except yaml.YAMLError as e:
+        sys.stderr.write(
+            f"ERROR: {src} contains invalid YAML: {e}\n"
+            f"  Fix the syntax error in brownie-config.yaml and re-run.\n"
+            f"  (No files were modified.)\n"
+        )
+        return 4
 
-    ape_cfg, todos = translate(brownie_cfg)
+    if not isinstance(brownie_cfg, dict):
+        sys.stderr.write(
+            f"ERROR: {src} did not parse to a YAML mapping (got "
+            f"{type(brownie_cfg).__name__}). Brownie configs must have "
+            f"top-level keys like `networks:`, `compiler:`, etc.\n"
+        )
+        return 5
+
+    try:
+        ape_cfg, todos = translate(brownie_cfg)
+    except Exception as e:  # noqa: BLE001 — defensive top-level catch
+        sys.stderr.write(
+            f"ERROR while translating config: {type(e).__name__}: {e}\n"
+            f"  This is a bug - please open an issue with the brownie-config.yaml\n"
+            f"  contents at https://github.com/PugarHuda/brownie-to-ape/issues\n"
+        )
+        return 6
 
     HANDLED = {
         "networks", "compiler", "dependencies", "wallets",
@@ -176,17 +206,31 @@ def main(argv: list[str]) -> int:
             f"Wrote new content to {dst}.new instead.\n"
         )
         dst = dst.with_suffix(".yaml.new")
-    dst.write_text(out, encoding="utf-8")
+    try:
+        dst.write_text(out, encoding="utf-8")
+    except OSError as e:
+        sys.stderr.write(
+            f"ERROR: cannot write {dst}: {e}\n"
+            f"  Check directory permissions.\n"
+        )
+        return 7
     sys.stdout.write(f"[OK] Wrote {dst}\n")
     if todos:
         sys.stdout.write(
-            f"  ({len(todos)} TODO(s) — review the generated file before running `ape compile`)\n"
+            f"  ({len(todos)} TODO(s) - review the generated file before running `ape compile`)\n"
         )
 
     # Rename the original to .legacy so the user keeps a copy but Ape
     # doesn't accidentally pick it up.
     legacy = src.with_suffix(".yaml.legacy")
-    src.rename(legacy)
+    try:
+        src.rename(legacy)
+    except OSError as e:
+        sys.stderr.write(
+            f"WARNING: wrote {dst} but could not rename {src} -> {legacy}: {e}\n"
+            f"  Rename it manually so Ape doesn't pick up the legacy config.\n"
+        )
+        return 0
     sys.stdout.write(f"[OK] Renamed {src.name} -> {legacy.name}\n")
     return 0
 

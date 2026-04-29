@@ -289,24 +289,15 @@ const codemod: Codemod<Python> = async (root) => {
   // Surface unknown exception names: the import is now `from ape import
   // exceptions`, but `exceptions.<UnknownName>` will fail at attribute
   // access time. Add a top-of-file TODO so the user knows where to look.
+  // Collected lines prepended at the first non-import anchor (combined edit
+  // to avoid overlap with Pass 1's import rewrites and to keep multiple
+  // top-of-file additions in a single deterministic place).
+  const preludeAdditions: string[] = [];
   if (unknownExceptionNames.size > 0) {
-    // Place the TODO above the first non-import / non-comment node so it
-    // doesn't collide with Pass 1's import rewrite edit.
-    const moduleChildren = rootNode.children();
-    const anchor = moduleChildren.find((c) => {
-      const k = c.kind();
-      return (
-        k !== "comment" &&
-        k !== "future_import_statement" &&
-        k !== "import_from_statement" &&
-        k !== "import_statement"
-      );
-    });
-    if (anchor) {
-      const names = [...unknownExceptionNames].sort().join(", ");
-      const todo = `# TODO(brownie-to-ape): exceptions.{${names}} have no known Ape mapping — Ape's exception class names differ. See https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html`;
-      edits.push(anchor.replace(`${todo}\n${anchor.text()}`));
-    }
+    const names = [...unknownExceptionNames].sort().join(", ");
+    preludeAdditions.push(
+      `# TODO(brownie-to-ape): exceptions.{${names}} have no known Ape mapping — Ape's exception class names differ. See https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html`,
+    );
   }
 
   // ────────────────────────────────────────────────────────────────────
@@ -539,14 +530,28 @@ const codemod: Codemod<Python> = async (root) => {
   }
 
   // ────────────────────────────────────────────────────────────────────
-  // Transform 9: append inline TODO comment to Wei("...") calls.
-  // Brownie's `Wei("1 ether")` becomes `ape.utils.convert("1 ether", int)`
-  // in Ape — different module, requires a new import. Same safe-context
-  // guard as accounts.add (statement / assignment RHS only).
+  // Transform 9: rewrite Wei("X") → convert("X", int) and inject the
+  // required `from ape.utils import convert` import.
+  // Only fires when the Wei call has a single string-literal argument —
+  // the common Brownie idiom. `Wei(some_var)` and `Wei(1, "ether")` are
+  // left alone (we can't safely synthesize the convert form).
   // ────────────────────────────────────────────────────────────────────
-  const WEI_TODO =
-    '  # TODO(brownie-to-ape): Wei("X") -> from ape.utils import convert; convert("X", int)';
-  appendInlineTodoToCalls(rootNode, edits, "Wei($$$ARGS)", WEI_TODO);
+  let didRewriteWei = false;
+  const weiCalls = rootNode.findAll({
+    rule: { pattern: "Wei($$$ARGS)" },
+  });
+  for (const callNode of weiCalls) {
+    const argList = callNode.field("arguments");
+    if (!argList) continue;
+    const args = argList
+      .children()
+      .filter((c) => !["(", ")", ","].includes(c.kind()));
+    if (args.length !== 1) continue;
+    const arg = args[0];
+    if (arg.kind() !== "string") continue;
+    edits.push(callNode.replace(`convert(${arg.text()}, int)`));
+    didRewriteWei = true;
+  }
 
   // ────────────────────────────────────────────────────────────────────
   // Transform 10: append inline TODO comment to interface.X(addr) calls.
@@ -563,6 +568,73 @@ const codemod: Codemod<Python> = async (root) => {
     "interface.$NAME($$$ARGS)",
     INTERFACE_TODO,
   );
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 12: web3.py utility patterns common in Brownie projects.
+  // We don't auto-rewrite (Web3.toWei takes (number, unit) — different
+  // from Ape's convert("X unit", int)) but we surface the migration
+  // path with an inline TODO so the user knows where to look.
+  // ────────────────────────────────────────────────────────────────────
+  const WEB3_TOWEI_TODO =
+    '  # TODO(brownie-to-ape): Web3.toWei(N, "unit") -> from ape.utils import convert; convert(f"{N} unit", int)';
+  appendInlineTodoToCalls(rootNode, edits, "Web3.toWei($$$ARGS)", WEB3_TOWEI_TODO);
+  const WEB3_FROMWEI_TODO =
+    '  # TODO(brownie-to-ape): Web3.fromWei(amt, "unit") -> Decimal(amt) / 10**decimals; or use ape.utils.convert from a string';
+  appendInlineTodoToCalls(rootNode, edits, "Web3.fromWei($$$ARGS)", WEB3_FROMWEI_TODO);
+
+  // ────────────────────────────────────────────────────────────────────
+  // Final prelude pass: if Wei was rewritten, we owe the file a
+  // `from ape.utils import convert` import. Combine that with any
+  // accumulated prelude additions (e.g. unknown-exception TODOs) into
+  // a single edit at the first non-import anchor, so we don't emit
+  // multiple overlapping edits at the same position.
+  // ────────────────────────────────────────────────────────────────────
+  if (didRewriteWei) {
+    preludeAdditions.unshift("from ape.utils import convert");
+  }
+  if (preludeAdditions.length > 0) {
+    const moduleChildren = rootNode.children();
+    const anchor = moduleChildren.find((c) => {
+      const k = c.kind();
+      return (
+        k !== "comment" &&
+        k !== "future_import_statement" &&
+        k !== "import_from_statement" &&
+        k !== "import_statement"
+      );
+    });
+    if (anchor) {
+      // Target the anchor's FIRST TOKEN (e.g. the `def` keyword of a
+      // function definition) instead of the whole anchor node. This
+      // keeps the edit range tiny and non-overlapping with any other
+      // edits that may target nodes inside the same anchor (e.g. Wei
+      // rewrites in the function body).
+      const firstToken = anchor.children()[0] ?? anchor;
+      const block = preludeAdditions.join("\n");
+      edits.push(firstToken.replace(`${block}\n${firstToken.text()}`));
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Stats: emit a single-line JSON summary to stderr if any edits were
+  // applied. Useful for CI / wrappers; gracefully no-op when stderr is
+  // unavailable (sandboxed jssg runtime may not surface it).
+  // ────────────────────────────────────────────────────────────────────
+  if (edits.length > 0) {
+    try {
+      const summary = {
+        codemod: "brownie-to-ape",
+        edits: edits.length,
+        wei_rewritten: didRewriteWei,
+        unknown_exceptions: [...unknownExceptionNames].sort(),
+        rewrote_brownie_attr: didRewriteBrownieAttr,
+      };
+      // eslint-disable-next-line no-console
+      console.error(JSON.stringify(summary));
+    } catch {
+      // sandbox without console.error — silently skip
+    }
+  }
 
   if (edits.length === 0) return null;
   return rootNode.commitEdits(edits);

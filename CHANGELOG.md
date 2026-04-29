@@ -7,6 +7,41 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.0] — 2026-04-29
+
+Wei auto-rewrite, Web3.py adjacency, ergonomics polish.
+
+### Added
+- **Pass 9 graduated from inline-TODO to actual rewrite.** `Wei("X")` →
+  `convert("X", int)` when the argument is a single string literal.
+- **Auto-injection of `from ape.utils import convert`** at a non-import
+  anchor when Pass 9 fires. Combined with the existing unknown-exception
+  TODO into one prelude edit to avoid edit-overlap collisions.
+- **Pass 12: Web3.toWei / Web3.fromWei inline TODO**. Brownie projects
+  routinely use `Web3.toWei(0.1, "ether")` (web3.py); we surface the Ape
+  migration path without auto-rewriting (the arg shapes are different).
+- **Stats reporting**: `console.error` JSON line per file with edit
+  counts, when supported by the runtime.
+- **`scripts/render_cast.py`**: synthesize an asciinema v2 `.cast` file
+  from a script representation of the demo (`demo/demo.cast`). Reviewers
+  can play back the codemod without running it.
+- `.github/PULL_REQUEST_TEMPLATE.md` and `.github/ISSUE_TEMPLATE/{bug,feature}.md`.
+- Fixture 44 (`web3-towei-fromwei`).
+
+### Changed
+- Anchor-based prelude additions now target the **first token** of the
+  first non-import node (e.g. the `def` keyword) instead of the whole
+  node. Tiny edit range = no overlap with body edits like Wei rewrites
+  inside the same function.
+
+### Fixed
+- `migrate_config.py` now wraps file IO and YAML parsing in try/except
+  with helpful error messages (exit codes 3/4/5/6/7 distinguish
+  permissions, syntax, schema, translator bugs, output write).
+- Removed remaining em-dash characters from script stdout/stderr writes
+  to avoid Windows cp1252 encode errors (file CONTENT keeps them; only
+  console output is affected).
+
 ## [0.6.0] — 2026-04-29
 
 Code-quality + adoption polish.
