@@ -109,11 +109,51 @@ function isInsideDictionary(node: any): boolean {
   return false;
 }
 
+// Append an inline trailing comment to call expressions that match `pattern`,
+// but only when the call sits at end-of-line position — expression_statement
+// or RHS of an assignment. Replaces ONLY the closing `)` token (not the full
+// call text) so that other passes can independently rewrite nodes nested in
+// the argument list (e.g. network.show_active() inside the call's args).
+function appendInlineTodoToCalls(
+  rootNode: any,
+  edits: any[],
+  pattern: string,
+  todoSuffix: string,
+): void {
+  const calls = rootNode.findAll({ rule: { pattern } });
+  for (const callNode of calls) {
+    const parent = callNode.parent();
+    if (!parent) continue;
+    const callText = callNode.text();
+    if (callText.includes("# TODO(brownie-to-ape)")) continue;
+
+    let safeContext = false;
+    if (parent.kind() === "expression_statement") {
+      safeContext = true;
+    } else if (parent.kind() === "assignment") {
+      const rhs = parent.field("right");
+      if (rhs && rhs.text() === callText) safeContext = true;
+    }
+    if (!safeContext) continue;
+
+    const argList = callNode.field("arguments");
+    if (!argList) continue;
+    const argChildren = argList.children();
+    const closingParen = argChildren[argChildren.length - 1];
+    if (!closingParen || closingParen.text() !== ")") continue;
+    edits.push(closingParen.replace(`)${todoSuffix}`));
+  }
+}
+
 const codemod: Codemod<Python> = async (root) => {
   const rootNode = root.root();
-  const sourceText = rootNode.text();
-  // Skip files that don't reference brownie at all — fast path + safety.
-  if (!sourceText.includes("brownie")) return null;
+  // Skip files that don't reference `brownie` at all. This catches both
+  // direct usage (imports, attribute access) and indirect references (e.g.
+  // conftest.py files that don't import brownie themselves but contain
+  // tx-dict patterns and have a docstring URL referencing the framework).
+  // A literal substring check is the right granularity — we want to
+  // process Brownie-adjacent files but skip anything totally unrelated.
+  if (!rootNode.text().includes("brownie")) return null;
 
   const edits: ReturnType<typeof rootNode.replace>[] = [];
 
@@ -230,13 +270,43 @@ const codemod: Codemod<Python> = async (root) => {
   const bareExceptions = rootNode.findAll({
     rule: { pattern: "exceptions.$NAME" },
   });
+  // Track unique unknown exception names per file so we can emit ONE
+  // top-of-file TODO instead of spamming every reference.
+  const unknownExceptionNames = new Set<string>();
   for (const node of bareExceptions) {
     const nameField = node.field("attribute");
     if (!nameField) continue;
     const name = nameField.text();
     const mapped = EXCEPTION_MAP[name];
-    if (!mapped || mapped === name) continue;
-    edits.push(node.replace(`exceptions.${mapped}`));
+    if (mapped) {
+      if (mapped !== name) {
+        edits.push(node.replace(`exceptions.${mapped}`));
+      }
+    } else {
+      unknownExceptionNames.add(name);
+    }
+  }
+  // Surface unknown exception names: the import is now `from ape import
+  // exceptions`, but `exceptions.<UnknownName>` will fail at attribute
+  // access time. Add a top-of-file TODO so the user knows where to look.
+  if (unknownExceptionNames.size > 0) {
+    // Place the TODO above the first non-import / non-comment node so it
+    // doesn't collide with Pass 1's import rewrite edit.
+    const moduleChildren = rootNode.children();
+    const anchor = moduleChildren.find((c) => {
+      const k = c.kind();
+      return (
+        k !== "comment" &&
+        k !== "future_import_statement" &&
+        k !== "import_from_statement" &&
+        k !== "import_statement"
+      );
+    });
+    if (anchor) {
+      const names = [...unknownExceptionNames].sort().join(", ");
+      const todo = `# TODO(brownie-to-ape): exceptions.{${names}} have no known Ape mapping — Ape's exception class names differ. See https://docs.apeworx.io/ape/stable/methoddocs/exceptions.html`;
+      edits.push(anchor.replace(`${todo}\n${anchor.text()}`));
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────
@@ -407,23 +477,12 @@ const codemod: Codemod<Python> = async (root) => {
   // ────────────────────────────────────────────────────────────────────
   const ACCOUNTS_ADD_TODO =
     "  # TODO(brownie-to-ape): Ape uses accounts.import_account_from_private_key(alias, passphrase, key)";
-  const accountsAddCalls = rootNode.findAll({
-    rule: { pattern: "accounts.add($$$ARGS)" },
-  });
-  for (const callNode of accountsAddCalls) {
-    const parent = callNode.parent();
-    if (!parent) continue;
-    const callText = callNode.text();
-    if (callText.includes("# TODO(brownie-to-ape)")) continue;
-    if (parent.kind() === "expression_statement") {
-      edits.push(callNode.replace(callText + ACCOUNTS_ADD_TODO));
-    } else if (parent.kind() === "assignment") {
-      const rhs = parent.field("right");
-      if (rhs && rhs.text() === callText) {
-        edits.push(callNode.replace(callText + ACCOUNTS_ADD_TODO));
-      }
-    }
-  }
+  appendInlineTodoToCalls(
+    rootNode,
+    edits,
+    "accounts.add($$$ARGS)",
+    ACCOUNTS_ADD_TODO,
+  );
 
   // ────────────────────────────────────────────────────────────────────
   // Transform 8: detect Brownie's `def isolate(fn_isolation): pass` fixture
@@ -467,6 +526,32 @@ const codemod: Codemod<Python> = async (root) => {
     if (target.text().includes("# TODO(brownie-to-ape)")) continue;
     edits.push(target.replace(`${ISOLATE_TODO}\n${target.text()}`));
   }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 9: append inline TODO comment to Wei("...") calls.
+  // Brownie's `Wei("1 ether")` becomes `ape.utils.convert("1 ether", int)`
+  // in Ape — different module, requires a new import. Same safe-context
+  // guard as accounts.add (statement / assignment RHS only).
+  // ────────────────────────────────────────────────────────────────────
+  const WEI_TODO =
+    '  # TODO(brownie-to-ape): Wei("X") -> from ape.utils import convert; convert("X", int)';
+  appendInlineTodoToCalls(rootNode, edits, "Wei($$$ARGS)", WEI_TODO);
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 10: append inline TODO comment to interface.X(addr) calls.
+  // Brownie auto-loads ABIs via `interface.IERC20(addr).balanceOf(...)`.
+  // Ape uses `Contract(addr)` with explicit ABI/type hints. Different
+  // shape — flag with a TODO instead of attempting an automatic rewrite.
+  // Same safe-context guard.
+  // ────────────────────────────────────────────────────────────────────
+  const INTERFACE_TODO =
+    "  # TODO(brownie-to-ape): interface.X(addr) -> Ape's Contract(addr) with explicit ABI/type loaded via project";
+  appendInlineTodoToCalls(
+    rootNode,
+    edits,
+    "interface.$NAME($$$ARGS)",
+    INTERFACE_TODO,
+  );
 
   if (edits.length === 0) return null;
   return rootNode.commitEdits(edits);

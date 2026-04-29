@@ -21,6 +21,9 @@ Built with [Codemod](https://codemod.com/) `jssg` engine (ast-grep on Tree-sitte
 | 11 | Brownie exception class names | `exceptions.VirtualMachineError`, `brownie.exceptions.VirtualMachineError` | `exceptions.ContractLogicError`, `ape.exceptions.ContractLogicError` |
 | 12 | `accounts.add(pk)` inline TODO | `accounts.add(pk)` | `accounts.add(pk)  # TODO: Ape uses accounts.import_account_from_private_key(...)` |
 | 13 | Brownie's `isolate(fn_isolation): pass` fixture | `def isolate(fn_isolation): pass` | TODO comment above the decorator (Ape has `chain.isolate()` built-in) |
+| 14 | `Wei("X")` calls | `Wei("1 ether")` | `Wei("1 ether")  # TODO: from ape.utils import convert; convert("1 ether", int)` (inline TODO at safe contexts) |
+| 15 | `interface.X(addr)` calls | `interface.IERC20(addr)` | `interface.IERC20(addr)  # TODO: Ape's Contract(addr) with explicit ABI/type` |
+| 16 | Unknown `exceptions.X` references | `exceptions.SomeUnknownExc` | TODO at top of file listing unmapped exception names |
 | Bonus | YAML config helper (`scripts/migrate_config.py`) | `brownie-config.yaml` | `ape-config.yaml` (networks, solidity, dependencies translated; legacy file preserved) |
 
 ## Install & Run
@@ -39,15 +42,16 @@ codemod workflow run -w workflow.yaml -t /path/to/your/brownie/project --no-inte
 
 ## Validated on real OSS repos
 
-Tested on three Brownie OSS projects covering different shapes (token tutorial, simple deploy script, multi-network lottery with VRF mocks):
+Tested on four Brownie OSS projects covering different shapes (token tutorial, simple deploy, multi-network lottery with VRF mocks, Aave DeFi integration):
 
 | Repo | Files modified | Patterns auto-migrated | False positives |
 |---|---|---|---|
-| [brownie-mix/token-mix](https://github.com/brownie-mix/token-mix) | 4 / 5 `.py` | ~62 (3 imports, 30+ tx-dicts, 6 reverts, 2 bare imports) | **0** |
-| [PatrickAlphaC/brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 `.py` | ~21 (5 imports, 8 tx-dicts, 8 show_active) | **0** |
-| [PatrickAlphaC/smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 `.py` | ~30 (5 imports, 13 tx-dicts, 9 show_active) | **0** |
+| [brownie-mix/token-mix](https://github.com/brownie-mix/token-mix) | 4 / 5 `.py` | ~62 (3 imports, 30+ tx-dicts, 6 reverts, 2 bare imports, 1 isolate fixture) | **0** |
+| [PatrickAlphaC/brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 `.py` | ~21 (5 imports, 8 tx-dicts, 8 show_active, 1 exception rename, 1 accounts.add TODO) | **0** |
+| [PatrickAlphaC/smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 `.py` | ~30 (5 imports, 13 tx-dicts, 9 show_active, 1 exception rename) | **0** |
+| [PatrickAlphaC/aave_brownie_py_freecode](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 4 / 5 `.py` | ~24 (3 imports, 8 tx-dicts, 7 show_active, 5 interface TODOs) | **0** |
 
-**Combined: 14/18 files modified across 3 OSS repos. ~120 patterns auto-migrated (incl. 3 exception renames + isolate TODO + accounts.add TODOs). 0 false positives.**
+**Combined: 18/23 files modified across 4 OSS repos. ~137 patterns auto-migrated. 0 false positives.**
 
 See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up.
 

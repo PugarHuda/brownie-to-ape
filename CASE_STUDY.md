@@ -6,16 +6,17 @@
 
 ## TL;DR
 
-I built a Codemod recipe (`brownie-to-ape`) that migrates Python smart-contract projects from the deprecated Brownie framework to ApeWorx Ape. Validated on **three** real open-source repos with **zero false positives**:
+I built a Codemod recipe (`brownie-to-ape`) that migrates Python smart-contract projects from the deprecated Brownie framework to ApeWorx Ape. Validated on **four** real open-source repos with **zero false positives**:
 
-| Repo | Files | Patterns auto-migrated | False positives | False negatives (TODOs) |
+| Repo | Files | Patterns auto-migrated | False positives | TODOs (manual review) |
 |---|---|---|---|---|
-| [`brownie-mix/token-mix`](https://github.com/brownie-mix/token-mix) | 4 / 5 .py | ~62 | **0** | 1 (Token contract reference) |
-| [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 .py | ~21 | **0** | 4 (contract names) |
-| [`PatrickAlphaC/smartcontract-lottery`](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 .py | ~30 | **0** | 5 (contract names + `exceptions`) |
-| **Combined** | **14 / 18** | **~113** | **0** | **10 contract/exception TODOs** |
+| [`brownie-mix/token-mix`](https://github.com/brownie-mix/token-mix) | 4 / 5 .py | ~62 | **0** | 1 contract name + 1 isolate fixture |
+| [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 .py | ~21 | **0** | 4 contract names + 1 accounts.add |
+| [`PatrickAlphaC/smartcontract-lottery`](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 .py | ~30 | **0** | 5 contract names + 1 isolate |
+| [`PatrickAlphaC/aave_brownie_py_freecode`](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 4 / 5 .py | ~24 | **0** | 1 interface drop + 5 inline interface TODOs |
+| **Combined** | **18 / 23** | **~137** | **0** | **~19 contextual TODOs** |
 
-The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~290 LOC, 6 transform passes). 26 fixture tests, all passing.
+The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~510 LOC, 11 transform passes + helper). 38 fixture tests, all passing.
 
 ---
 
@@ -44,15 +45,16 @@ I categorized Brownie patterns into 8 groups by transform feasibility:
 
 Groups 1–6 are auto-migrated. Group 7 is auto-flagged via a TODO comment so the user knows where to look. Group 8 is left alone (FN by design — automation here would risk FPs).
 
-## 3. Architecture: 9-pass jssg transform
+## 3. Architecture: 11-pass jssg transform
 
-Codemod's `jssg` engine runs JavaScript/TypeScript code that operates on Tree-sitter ASTs. The codemod has 9 ordered passes (single file, ~370 LOC):
+Codemod's `jssg` engine runs JavaScript/TypeScript code that operates on Tree-sitter ASTs. The codemod has 11 ordered passes (single file, ~510 LOC):
 
 ```
 Pass 1:  from brownie import X, Y, Z  →  from ape import X', Y' (+ TODO for dropped Z)
 Pass 2a: brownie.network.show_active()  →  networks.active_provider.network.name
 Pass 2b: bare network.show_active()  →  networks.active_provider.network.name
-Pass 2c: exceptions.VirtualMachineError  →  exceptions.ContractLogicError (+ qualified form)
+Pass 2c: exceptions.VirtualMachineError  →  exceptions.ContractLogicError (+ qualified form,
+         + top-of-file TODO for unmapped exception names)
 Pass 3:  brownie.<known_attr>  →  ape.<attr>  (whitelist, skips inside dict literals)
 Pass 3b: import brownie  →  import ape  (only if Pass 3 / 2c qualified rewrote)
 Pass 4:  tx-dict {"from": x, ...}  →  kwargs sender=x, ...  (whitelist + spread guard)
@@ -60,7 +62,11 @@ Pass 5:  chain.mine(N)  →  chain.mine(num_blocks=N)  (positional → kwarg)
 Pass 6:  chain.sleep(N) as a statement  →  chain.pending_timestamp += N
 Pass 7:  accounts.add(pk)  →  accounts.add(pk)  # TODO: Ape: import_account_from_private_key(...)
 Pass 8:  Brownie's def isolate(fn_isolation): pass  →  + TODO comment above (Ape has chain.isolate())
+Pass 9:  Wei("X")  →  Wei("X")  # TODO: from ape.utils import convert; convert("X", int)
+Pass 10: interface.X(addr)  →  interface.X(addr)  # TODO: Ape's Contract(addr) with explicit ABI/type
 ```
+
+**Inline TODO passes (7, 9, 10) replace only the closing `)` of the call**, not the entire call text. This composes cleanly with sibling-pass edits — e.g. an `interface.X(config["networks"][network.show_active()][...])` call gets BOTH its `network.show_active()` rewritten by Pass 2b AND its closing `)` annotated by Pass 10. Replacing the whole call would clobber the inner edit.
 
 A supplemental Python helper (`scripts/migrate_config.py`) converts `brownie-config.yaml` → `ape-config.yaml` for known fields (networks, solidity remappings/version, dependencies, dotenv) and emits TODO comments for unknown sections. The legacy YAML is renamed to `.legacy` so Ape doesn't accidentally pick it up.
 
@@ -135,7 +141,7 @@ I tested on two repos representing typical Brownie project shapes — a token tu
 
 ## 6. Test Suite
 
-33 fixture tests (input/expected pairs), all passing. They cover:
+38 fixture tests (input/expected pairs), all passing. They cover:
 
 | # | Fixture | What it asserts |
 |---|---|---|
@@ -170,15 +176,20 @@ I tested on two repos representing typical Brownie project shapes — a token tu
 | 31 | accounts-add-in-expression | `if accounts.add(pk) is not None:` left alone (no inline comment) |
 | 32 | isolate-fixture | TODO comment above `def isolate(fn_isolation): pass` |
 | 33 | isolate-customized-untouched | User-customized isolate fixture with snapshot/revert NOT flagged |
+| 34 | wei-call-statement | `Wei("1 ether")` in safe context gets inline TODO |
+| 35 | wei-in-expression | `Wei(...)` inside `if` condition or list comprehension left alone |
+| 36 | interface-call | `interface.IERC20(addr)` in assignment RHS gets inline TODO |
+| 37 | interface-chained | `interface.IERC20(addr).balanceOf(...)` (chained) left alone — would break syntax |
+| 38 | unknown-exception-todo | `exceptions.SomeUnknownExc` triggers top-of-file TODO listing the unmapped name |
 
 ```bash
 $ codemod jssg test -l python ./scripts/codemod.ts ./tests/fixtures
-running 33 tests
+running 38 tests
 test 01-basic-imports                 ... ok
 […]
-test 33-isolate-customized-untouched  ... ok
+test 38-unknown-exception-todo        ... ok
 
-test result: ok. 33 passed; 0 failed; 0 ignored
+test result: ok. 38 passed; 0 failed; 0 ignored
 ```
 
 ## 7. AI vs Manual Effort Breakdown
