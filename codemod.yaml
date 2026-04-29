@@ -1,6 +1,6 @@
 schema_version: "1.0"
 
-name: "brownie-to-ape"
+name: "@pugarhuda/brownie-to-ape"
 version: "0.7.3"
 description: "Automated migration codemod from Brownie to ApeWorx Ape framework — imports, deploy syntax, transaction kwargs, network/chain API, reverts, conftest fixtures"
 author: "Pugar Huda Mantoro <pugarhudam@gmail.com>"
