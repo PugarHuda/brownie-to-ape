@@ -14,10 +14,17 @@ const IMPORT_NAMES_DROP: Set<string> = new Set([
   "Wei",        // → ape.utils.convert
   // "exceptions" is intentionally kept — Ape also has `ape.exceptions`.
   // Known class names are renamed by the exceptions-rewrite pass below.
-  "interface",  // Brownie interface object — Ape pattern differs
+  "interface",  // → Ape's Contract(addr) with explicit ABI; Pass 10 inline TODOs use sites
   "rpc",        // Different test backend in Ape
   "history",    // Different transaction history API
-  "web3",       // Ape exposes via networks.active_provider.web3
+]);
+
+// Names kept in `from brownie import X` (NOT migrated to ape) with an
+// inline TODO comment. Pass 16 rewrites known web3.eth.X helpers; other
+// web3 callsites stay runnable via the kept brownie import during the
+// migration period.
+const IMPORT_NAMES_PRESERVE: Set<string> = new Set([
+  "web3",
 ]);
 
 // Brownie exception class names → Ape equivalents. Used to rewrite both
@@ -57,6 +64,7 @@ const IMPORT_NAMES_TO_APE_UTILS: Set<string> = new Set([
 function isLikelyContractName(name: string): boolean {
   if (BROWNIE_BUILTIN_NAMES.has(name)) return false;
   if (IMPORT_NAMES_DROP.has(name)) return false;
+  if (IMPORT_NAMES_PRESERVE.has(name)) return false;
   if (IMPORT_NAMES_TO_APE_UTILS.has(name)) return false;
   return /^[A-Z]/.test(name);
 }
@@ -158,13 +166,18 @@ function appendInlineTodoToCalls(
 
 const codemod: Codemod<Python> = async (root) => {
   const rootNode = root.root();
-  // Skip files that don't reference `brownie` at all. This catches both
-  // direct usage (imports, attribute access) and indirect references (e.g.
-  // conftest.py files that don't import brownie themselves but contain
-  // tx-dict patterns and have a docstring URL referencing the framework).
-  // A literal substring check is the right granularity — we want to
-  // process Brownie-adjacent files but skip anything totally unrelated.
-  if (!rootNode.text().includes("brownie")) return null;
+  // Skip files that have NO Brownie OR Ape signal. We process Brownie
+  // projects (most common) AND already-partially-migrated projects that
+  // import from ape (Pass 15 rewrites contract containers in those).
+  // Pass-level guards (hasProjectImport, tx-dict whitelist, etc.)
+  // prevent FPs in non-Brownie/non-Ape files that slip through.
+  const earlyExitText = rootNode.text();
+  if (
+    !earlyExitText.includes("brownie") &&
+    !earlyExitText.includes("from ape")
+  ) {
+    return null;
+  }
 
   const edits: ReturnType<typeof rootNode.replace>[] = [];
 
@@ -181,6 +194,7 @@ const codemod: Codemod<Python> = async (root) => {
     },
   });
 
+  let addedProjectImport = false;
   for (const node of fromImports) {
     const moduleField = node.field("module_name");
     const moduleText = moduleField?.text() ?? "brownie";
@@ -205,27 +219,52 @@ const codemod: Codemod<Python> = async (root) => {
 
     const renamed: string[] = [];
     const movedToUtils: string[] = [];
+    const preserved: string[] = []; // kept in `from brownie import …` with TODO
     const dropped: string[] = [];
+    let droppedAnyContract = false;
     for (const item of imported) {
+      if (IMPORT_NAMES_PRESERVE.has(item.name)) {
+        preserved.push(item.alias ? `${item.name} as ${item.alias}` : item.name);
+        continue;
+      }
       if (IMPORT_NAMES_TO_APE_UTILS.has(item.name)) {
         movedToUtils.push(
           item.alias ? `${item.name} as ${item.alias}` : item.name,
         );
         continue;
       }
-      if (IMPORT_NAMES_DROP.has(item.name) || isLikelyContractName(item.name)) {
-        // Preserve full "Name as Alias" form so the user can grep for either.
+      if (IMPORT_NAMES_DROP.has(item.name)) {
         dropped.push(item.alias ? `${item.name} as ${item.alias}` : item.name);
+        continue;
+      }
+      if (isLikelyContractName(item.name)) {
+        // Contract artifact dropped — but we'll auto-add `project` to the
+        // from-ape imports so subsequent `project.<Name>.deployments[-1]`
+        // works (handled by Pass 15 below).
+        dropped.push(item.alias ? `${item.name} as ${item.alias}` : item.name);
+        droppedAnyContract = true;
         continue;
       }
       const newName = IMPORT_NAME_RENAMES[item.name] ?? item.name;
       renamed.push(item.alias ? `${newName} as ${item.alias}` : newName);
     }
 
+    // Auto-add `project` to the from-ape imports when at least one contract
+    // artifact was dropped — gives downstream Pass 15 something to bind to.
+    if (droppedAnyContract && !renamed.includes("project") && !renamed.some((n) => n.startsWith("project "))) {
+      renamed.push("project");
+      addedProjectImport = true;
+    }
+
     const lines: string[] = [];
     if (dropped.length > 0) {
       lines.push(
         `# TODO(brownie-to-ape): no direct Ape equivalent for: ${dropped.join(", ")}`,
+      );
+    }
+    if (preserved.length > 0) {
+      lines.push(
+        `from brownie import ${preserved.join(", ")}  # TODO(brownie-to-ape): migrate this unsupported Brownie import manually.`,
       );
     }
     if (movedToUtils.length > 0) {
@@ -235,7 +274,14 @@ const codemod: Codemod<Python> = async (root) => {
       lines.push(`from ape import ${renamed.join(", ")}`);
     }
     let replacement: string;
-    if (lines.length === 0 || (lines.length === 1 && dropped.length > 0)) {
+    if (lines.length === 0) {
+      // Nothing to migrate — leave original import alone (shouldn't happen).
+      continue;
+    } else if (
+      renamed.length === 0 &&
+      preserved.length === 0 &&
+      movedToUtils.length === 0
+    ) {
       // All names dropped — comment out the original import too.
       replacement = `${lines.join("\n")}\n# ${node.text()}`;
     } else {
@@ -611,6 +657,205 @@ const codemod: Codemod<Python> = async (root) => {
   appendInlineTodoToCalls(rootNode, edits, "Web3.fromWei($$$ARGS)", WEB3_FROMWEI_TODO);
 
   // ────────────────────────────────────────────────────────────────────
+  // Transform 13: event-index-field. Brownie's `tx.events[N][key]` →
+  // Ape's `tx.events[N].event_arguments[key]`. Insert
+  // `.event_arguments` between the two subscripts.
+  // AST shape: subscript(subscript(<events_attr>, <int>), <key>)
+  //   where <events_attr> is `<obj>.events` (attribute kind)
+  // ────────────────────────────────────────────────────────────────────
+  const eventIndexAccess = rootNode.findAll({
+    rule: {
+      kind: "subscript",
+      has: {
+        field: "value",
+        kind: "subscript",
+      },
+    },
+  });
+  for (const outerSub of eventIndexAccess) {
+    const innerSub = outerSub.field("value");
+    if (!innerSub || innerSub.kind() !== "subscript") continue;
+    const eventsAttr = innerSub.field("value");
+    if (!eventsAttr || eventsAttr.kind() !== "attribute") continue;
+    const attrName = eventsAttr.field("attribute");
+    if (!attrName || attrName.text() !== "events") continue;
+    // Inner key MUST be an integer (`tx.events[0]` style). String keys
+    // (`tx.events["Name"]`) are handled by Pass 14 — guarding here
+    // prevents Pass 13 from clobbering Pass 14's rewrites.
+    const innerKey = innerSub.field("subscript");
+    if (!innerKey || innerKey.kind() !== "integer") continue;
+    const innerText = innerSub.text();
+    const keyField = outerSub.field("subscript");
+    if (!keyField) continue;
+    const keyText = keyField.text();
+    edits.push(outerSub.replace(`${innerText}.event_arguments[${keyText}]`));
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 14: event-direct-field. Brownie's syntactic sugar
+  // `<obj>.events["Name"]["field"]` → Ape's filter-by-name pattern:
+  // `[log for log in <obj>.events if log.event_name == "Name"][0].event_arguments["field"]`
+  // Verbose but a faithful rewrite. Only fires when both subscripts
+  // are string literals — minimizes FP risk on unrelated subscripts.
+  // ────────────────────────────────────────────────────────────────────
+  const eventNameAccess = rootNode.findAll({
+    rule: {
+      kind: "subscript",
+      has: {
+        field: "value",
+        kind: "subscript",
+      },
+    },
+  });
+  for (const outerSub of eventNameAccess) {
+    const innerSub = outerSub.field("value");
+    if (!innerSub || innerSub.kind() !== "subscript") continue;
+    const eventsAttr = innerSub.field("value");
+    if (!eventsAttr || eventsAttr.kind() !== "attribute") continue;
+    const attrName = eventsAttr.field("attribute");
+    if (!attrName || attrName.text() !== "events") continue;
+    // Inner key MUST be a string literal — distinguishes by-name access
+    // from by-index access (Pass 13 handles the integer case).
+    const innerKey = innerSub.field("subscript");
+    if (!innerKey || innerKey.kind() !== "string") continue;
+    const outerKey = outerSub.field("subscript");
+    if (!outerKey) continue;
+    // Skip if Pass 13 already scheduled this exact node (numeric index).
+    if (innerKey.kind() !== "string") continue;
+    const eventsText = eventsAttr.text(); // e.g. "tx.events"
+    const nameText = innerKey.text(); // e.g. '"Transfer"'
+    const fieldText = outerKey.text(); // e.g. '"to"'
+    edits.push(
+      outerSub.replace(
+        `[log for log in ${eventsText} if log.event_name == ${nameText}][0].event_arguments[${fieldText}]`,
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 15: project containers. When the file imports `project`
+  // from ape (which Pass 1 ensures whenever a contract artifact was
+  // dropped), rewrite uppercase-name container access:
+  //   <Uppercase>[-1]            → project.<Uppercase>.deployments[-1]
+  //   len(<Uppercase>)           → len(project.<Uppercase>.deployments)
+  //   <Uppercase>.at($X)         → project.<Uppercase>.at($X)
+  // Only fires on names that look like contract artifacts (PascalCase,
+  // not in BROWNIE_BUILTIN_NAMES) — avoids FP on unrelated identifiers.
+  // ────────────────────────────────────────────────────────────────────
+  // Detect `from ape import …, project, …` by walking import_from_statement
+  // nodes. Cross-engine reliable, no regex quirks.
+  const apeImports = rootNode.findAll({
+    rule: {
+      kind: "import_from_statement",
+      has: { field: "module_name", regex: "^ape$" },
+    },
+  });
+  // hasProjectImport = either already imports project from ape, OR Pass 1
+  // queued an edit that will add it.
+  let hasProjectImport = addedProjectImport;
+  for (const node of apeImports) {
+    for (const child of node.children()) {
+      const k = child.kind();
+      if ((k === "dotted_name" || k === "identifier") && child.text() === "project") {
+        hasProjectImport = true;
+        break;
+      }
+      if (k === "aliased_import" && child.field("name")?.text() === "project") {
+        hasProjectImport = true;
+        break;
+      }
+    }
+    if (hasProjectImport) break;
+  }
+
+  if (hasProjectImport) {
+    const isContractName = (name: string): boolean =>
+      /^[A-Z][a-zA-Z0-9_]*$/.test(name) &&
+      !BROWNIE_BUILTIN_NAMES.has(name) &&
+      !IMPORT_NAMES_DROP.has(name) &&
+      !IMPORT_NAMES_PRESERVE.has(name) &&
+      !IMPORT_NAMES_TO_APE_UTILS.has(name) &&
+      name !== "Contract" &&
+      name !== "Wei";
+
+    // 15a: <Uppercase>[-1] / <Uppercase>[N]  →  project.<Uppercase>.deployments[-1]
+    const uppercaseSubscripts = rootNode.findAll({
+      rule: { kind: "subscript" },
+    });
+    for (const sub of uppercaseSubscripts) {
+      const valueNode = sub.field("value");
+      if (!valueNode || valueNode.kind() !== "identifier") continue;
+      const name = valueNode.text();
+      if (!isContractName(name)) continue;
+      const idxField = sub.field("subscript");
+      if (!idxField) continue;
+      const idxText = idxField.text();
+      // Skip if already part of a `project.X` chain (re-entry safety).
+      const parent = sub.parent();
+      if (parent && parent.text().startsWith("project.")) continue;
+      edits.push(sub.replace(`project.${name}.deployments[${idxText}]`));
+    }
+
+    // 15b: len(<Uppercase>)  →  len(project.<Uppercase>.deployments)
+    const lenCalls = rootNode.findAll({
+      rule: { pattern: "len($X)" },
+    });
+    for (const call of lenCalls) {
+      const argList = call.field("arguments");
+      if (!argList) continue;
+      const args = argList
+        .children()
+        .filter((c) => !["(", ")", ","].includes(c.kind()));
+      if (args.length !== 1) continue;
+      const arg = args[0];
+      if (arg.kind() !== "identifier") continue;
+      const name = arg.text();
+      if (!isContractName(name)) continue;
+      edits.push(arg.replace(`project.${name}.deployments`));
+    }
+
+    // 15c: <Uppercase>.at($X)  →  project.<Uppercase>.at($X)
+    const atCalls = rootNode.findAll({
+      rule: { pattern: "$NAME.at($X)" },
+    });
+    for (const call of atCalls) {
+      const funcNode = call.field("function");
+      if (!funcNode || funcNode.kind() !== "attribute") continue;
+      const obj = funcNode.field("object");
+      if (!obj || obj.kind() !== "identifier") continue;
+      const name = obj.text();
+      if (!isContractName(name)) continue;
+      // Replace just the object identifier with `project.<name>`.
+      edits.push(obj.replace(`project.${name}`));
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Transform 16: web3.eth.get_balance($X) → chain.get_balance($X).
+  // Auto-injects `from ape import chain` if the file kept `web3` (i.e.
+  // has `from brownie import web3` from the IMPORT_NAMES_PRESERVE
+  // path). Without that marker, `web3.eth.get_balance` may not be
+  // Brownie-flavored.
+  // ────────────────────────────────────────────────────────────────────
+  const hasPreservedWeb3 = rootNode.text().includes("from brownie import web3");
+  let didRewriteWeb3GetBalance = false;
+  if (hasPreservedWeb3) {
+    const web3Calls = rootNode.findAll({
+      rule: { pattern: "web3.eth.get_balance($X)" },
+    });
+    for (const call of web3Calls) {
+      const argList = call.field("arguments");
+      if (!argList) continue;
+      const args = argList
+        .children()
+        .filter((c) => !["(", ")", ","].includes(c.kind()));
+      if (args.length !== 1) continue;
+      edits.push(call.replace(`chain.get_balance(${args[0].text()})`));
+      didRewriteWeb3GetBalance = true;
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   // Final prelude pass: if Wei was rewritten, we owe the file a
   // `from ape.utils import convert` import. Combine that with any
   // accumulated prelude additions (e.g. unknown-exception TODOs) into
@@ -632,6 +877,21 @@ const codemod: Codemod<Python> = async (root) => {
     });
     if (existingConvertImport.length === 0) {
       preludeAdditions.unshift("from ape.utils import convert");
+    }
+  }
+  if (didRewriteWeb3GetBalance) {
+    // Same dedup logic for `from ape import chain`.
+    const existingChainImport = rootNode.findAll({
+      rule: {
+        kind: "import_from_statement",
+        all: [
+          { has: { field: "module_name", regex: "^ape$" } },
+          { regex: "\\bchain\\b" },
+        ],
+      },
+    });
+    if (existingChainImport.length === 0) {
+      preludeAdditions.unshift("from ape import chain");
     }
   }
   if (preludeAdditions.length > 0) {
