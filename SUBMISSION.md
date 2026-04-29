@@ -8,7 +8,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 `@pugarhuda/brownie-to-ape`
 
 ## Tagline / Short Description (≤140 chars)
-> Automated Brownie → ApeWorx Ape migration codemod. 12-pass jssg transform, **55 fixture + 13 unit tests**, validated on **4 OSS repos with zero false positives**.
+> Automated Brownie → ApeWorx Ape migration codemod. 16-pass jssg transform, **61 fixture + 13 unit tests**, validated on **4 OSS repos with zero false positives**.
 
 ## Category Tags
 - AI-assisted coding
@@ -19,7 +19,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 - Smart contracts
 
 ## Tracks Targeted
-- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.4
+- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.5
 - ✅ **Track 2: Public Case Study** (target $200) — `CASE_STUDY.md` + `DEMO.md` + asciinema cast
 - ✅ **Track 3: Framework Adoption** — issue [#2774](https://github.com/ApeWorX/ape/issues/2774) opened at ApeWorX/ape (target up to $2,000)
 
@@ -61,7 +61,7 @@ Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. Thousa
 | **Combined** | **18 / 23 (78%)** | **~137** |
 
 ### Test suite
-- **55 fixture tests** (jssg `input.py` + `expected.py` pairs) — 15 of those are negative tests proving the codemod does NOT fire in FP-risk contexts (lambda, list comprehension, walrus, async/await, OrderedDict, helper functions, malformed Python, brownie-only-in-string, dict-spread, etc.)
+- **61 fixture tests** (jssg `input.py` + `expected.py` pairs) — 15 of those are negative tests proving the codemod does NOT fire in FP-risk contexts (lambda, list comprehension, walrus, async/await, OrderedDict, helper functions, malformed Python, brownie-only-in-string, dict-spread, etc.)
 - **13 Python unit tests** for the YAML config translator
 - **CI on every push** ([test.yml](https://github.com/PugarHuda/brownie-to-ape/blob/main/.github/workflows/test.yml)), passing badge live in README
 
@@ -75,12 +75,12 @@ Ran 13 tests in 0.001s. OK
 
 ## Links
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
-- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.4)
+- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.5)
 - **Case Study:** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
 - **Demo (curated diffs):** https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md
 - **Asciinema cast:** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast
 - **Track 3 issue at ApeWorX/ape:** https://github.com/ApeWorX/ape/issues/2774
-- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.4
+- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.5
 
 ## How to test (for evaluators)
 
@@ -123,7 +123,7 @@ All FNs are intentional (contract artifacts can't be inferred without project sc
 
 ## Pre-publish checklist (status)
 
-- [x] All 55 fixture tests passing
+- [x] All 61 fixture tests passing
 - [x] All 13 Python unit tests passing
 - [x] Workflow YAML validated
 - [x] Tested on 4 real OSS repos with 0 FP
