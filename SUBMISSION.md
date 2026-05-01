@@ -8,7 +8,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 `@pugarhuda/brownie-to-ape`
 
 ## Tagline / Short Description (≤140 chars)
-> Automated Brownie → ApeWorx Ape migration codemod. 16-pass jssg transform, **61 fixture + 13 unit tests**, validated on **4 OSS repos with zero false positives**.
+> Automated Brownie → ApeWorx Ape migration codemod. 17-pass jssg transform, **62 fixture + 13 unit tests**, validated on **5 OSS repos (incl. Yearn Finance) with zero false positives**. Live demo: pugarhuda.github.io/brownie-to-ape
 
 ## Category Tags
 - AI-assisted coding
@@ -19,7 +19,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 - Smart contracts
 
 ## Tracks Targeted
-- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.5
+- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.6
 - ✅ **Track 2: Public Case Study** (target $200) — `CASE_STUDY.md` + `DEMO.md` + asciinema cast
 - ✅ **Track 3: Framework Adoption** — issue [#2774](https://github.com/ApeWorX/ape/issues/2774) opened at ApeWorX/ape (target up to $2,000)
 
@@ -75,12 +75,12 @@ Ran 13 tests in 0.001s. OK
 
 ## Links
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
-- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.5)
+- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.6)
 - **Case Study:** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
 - **Demo (curated diffs):** https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md
 - **Asciinema cast:** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast
 - **Track 3 issue at ApeWorX/ape:** https://github.com/ApeWorX/ape/issues/2774
-- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.5
+- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.6
 
 ## How to test (for evaluators)
 
