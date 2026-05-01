@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>brownie-to-ape · Live demo</title>
+<meta name="description" content="Automated Brownie -> ApeWorx Ape migration codemod. 17-pass jssg transform, 62 fixture + 13 unit tests, validated on 5 OSS repos with zero false positives.">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg-2: #14141d;
+  --bg-3: #1d1d28;
+  --fg: #e8e8f0;
+  --fg-dim: #9090a8;
+  --accent: #ff6b35;
+  --accent-2: #ffd166;
+  --green: #06d6a0;
+  --red: #ef476f;
+  --blue: #5b8def;
+  --line: #2a2a38;
+  --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+header {
+  padding: 56px 0 40px;
+  background: radial-gradient(ellipse at top, rgba(255,107,53,0.08), transparent 60%);
+  border-bottom: 1px solid var(--line);
+}
+header h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+header p.tagline {
+  font-size: 1.15rem;
+  color: var(--fg-dim);
+  margin: 0 0 24px;
+  max-width: 720px;
+}
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-family: var(--mono);
+  color: var(--fg-dim);
+  text-decoration: none;
+}
+.badge.primary { color: var(--accent); border-color: var(--accent); }
+.badge.success { color: var(--green); border-color: rgba(6,214,160,0.3); }
+.badge:hover { background: var(--bg-3); }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.btn {
+  display: inline-block;
+  padding: 12px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #ff7d4d; transform: translateY(-1px); }
+.btn-secondary { background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); }
+.btn-secondary:hover { background: var(--bg-3); }
+
+section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+section h2 {
+  font-size: 1.7rem;
+  margin: 0 0 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+section h2 .sub { color: var(--fg-dim); font-weight: 400; font-size: 0.9rem; margin-left: 12px; }
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.metric {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: left;
+}
+.metric .v {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-2);
+  font-family: var(--mono);
+  display: block;
+}
+.metric .l { color: var(--fg-dim); font-size: 0.85rem; margin-top: 4px; }
+
+.run-cmd {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: var(--accent-2);
+  overflow-x: auto;
+  white-space: pre;
+}
+.run-cmd .comment { color: var(--fg-dim); }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1px;
+}
+.tab {
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: var(--bg-2);
+  color: var(--fg-dim);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--sans);
+  transition: all 0.1s;
+}
+.tab.active { background: var(--bg-3); color: var(--accent); border-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--fg); }
+
+.diff-pane { display: none; }
+.diff-pane.active { display: block; }
+.diff-pane h3 { margin: 0 0 6px; font-size: 1.1rem; font-weight: 600; }
+.diff-pane .desc { color: var(--fg-dim); font-size: 0.92rem; margin-bottom: 14px; }
+
+.diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 720px) { .diff-grid { grid-template-columns: 1fr; } }
+.code-card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.code-card .label {
+  background: var(--bg-3);
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-family: var(--mono);
+  color: var(--fg-dim);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.code-card.before .label { color: var(--red); }
+.code-card.after .label { color: var(--green); }
+.code-card pre {
+  margin: 0;
+  padding: 14px 18px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--fg);
+}
+.code-card pre .add { background: rgba(6,214,160,0.12); color: var(--green); display: block; padding: 0 4px; margin: 0 -4px; }
+.code-card pre .del { background: rgba(239,71,111,0.12); color: var(--red); display: block; padding: 0 4px; margin: 0 -4px; }
+.code-card pre .todo { color: var(--accent-2); font-style: italic; }
+
+.repo-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.repo-table th, .repo-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.repo-table th { color: var(--fg-dim); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.repo-table .ok { color: var(--green); font-family: var(--mono); }
+.repo-table a { color: var(--blue); text-decoration: none; }
+.repo-table a:hover { text-decoration: underline; }
+
+footer { padding: 32px 0; color: var(--fg-dim); font-size: 0.9rem; text-align: center; }
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>brownie-to-ape</h1>
+    <p class="tagline">
+      Automated Brownie&nbsp;→&nbsp;ApeWorx Ape migration codemod. 17-pass jssg transform,
+      62 fixture + 13 unit tests, validated on <strong>5 real OSS repos</strong> with
+      <strong>zero false positives</strong>. Built for the
+      <a href="https://dorahacks.io/hackathon/codemod" style="color:var(--accent)">Codemod Boring AI hackathon</a>.
+    </p>
+    <div class="badges">
+      <a class="badge primary" href="https://app.codemod.com/registry/@pugarhuda/brownie-to-ape">📦 @pugarhuda/brownie-to-ape</a>
+      <a class="badge success" href="https://github.com/PugarHuda/brownie-to-ape">⭐ GitHub</a>
+      <a class="badge" href="https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.6">v0.7.6</a>
+      <a class="badge success" href="https://github.com/PugarHuda/brownie-to-ape/actions">✓ CI passing</a>
+      <a class="badge" href="https://github.com/ApeWorX/ape/issues/2774">📬 Track 3 issue #2774</a>
+    </div>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/PugarHuda/brownie-to-ape">View source</a>
+      <a class="btn btn-secondary" href="https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md">Case study</a>
+      <a class="btn btn-secondary" href="https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md">Full demo</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>One command<span class="sub">~3 seconds per repo, zero false positives</span></h2>
+    <div class="run-cmd">
+<span class="comment"># Run on any Brownie project — git diff to see what changed</span>
+npx codemod@latest @pugarhuda/brownie-to-ape -t /path/to/your/brownie/project</div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>By the numbers</h2>
+    <div class="metric-grid">
+      <div class="metric"><span class="v">17</span><span class="l">transform passes</span></div>
+      <div class="metric"><span class="v">75</span><span class="l">tests (62 jssg + 13 unit)</span></div>
+      <div class="metric"><span class="v">5</span><span class="l">OSS repos validated</span></div>
+      <div class="metric"><span class="v">22</span><span class="l">files migrated cleanly</span></div>
+      <div class="metric"><span class="v" style="color:var(--green)">0</span><span class="l">false positives</span></div>
+      <div class="metric"><span class="v">~3s</span><span class="l">per repo</span></div>
+    </div>
+    <table class="repo-table">
+      <thead><tr><th>Repo</th><th>Shape</th><th>.py modified</th><th>Patterns</th><th>FP</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/yearn/brownie-strategy-mix">yearn/brownie-strategy-mix</a></td><td>Yearn DeFi strategy template</td><td>4 / 7</td><td>~33</td><td class="ok">0</td></tr>
+        <tr><td><a href="https://github.com/PatrickAlphaC/aave_brownie_py_freecode">aave_brownie_py_freecode</a></td><td>Aave DeFi integration</td><td>4 / 5</td><td>~24</td><td class="ok">0</td></tr>
+        <tr><td><a href="https://github.com/PatrickAlphaC/smartcontract-lottery">smartcontract-lottery</a></td><td>Multi-network + VRF</td><td>5 / 7</td><td>~30</td><td class="ok">0</td></tr>
+        <tr><td><a href="https://github.com/PatrickAlphaC/brownie_fund_me">brownie_fund_me</a></td><td>Oracle integration</td><td>5 / 6</td><td>~21</td><td class="ok">0</td></tr>
+        <tr><td><a href="https://github.com/brownie-mix/token-mix">brownie-mix/token-mix</a></td><td>Token tutorial</td><td>4 / 5</td><td>~62</td><td class="ok">0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Before / after — real diffs from real repos</h2>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="ex1">Tx-dict → kwargs</button>
+      <button class="tab" data-tab="ex2">network.show_active()</button>
+      <button class="tab" data-tab="ex3">Exception rename</button>
+      <button class="tab" data-tab="ex4">Wei → convert</button>
+      <button class="tab" data-tab="ex5">accounts.impersonate</button>
+      <button class="tab" data-tab="ex6">Multi-line interface</button>
+    </div>
+
+    <div class="diff-pane active" data-pane="ex1">
+      <h3>Tx-dict → kwargs (the most pervasive Brownie pattern)</h3>
+      <p class="desc">Brownie's signature <code>{"from": acct, "value": v}</code> dict at the end of a method call becomes plain kwargs. Handles trailing kwargs, multi-line, single + double + mixed quotes.</p>
+      <div class="diff-grid">
+        <div class="code-card before"><div class="label"><span>Brownie</span><span>tests/test_transferFrom.py</span></div>
+<pre><span class="del">import brownie</span>
+
+def test_insufficient_balance(accounts, token):
+    balance = token.balanceOf(accounts[0])
+<span class="del">    token.approve(accounts[1], balance + 1, {'from': accounts[0]})</span>
+<span class="del">    with brownie.reverts():</span>
+        token.transferFrom(
+            accounts[0], accounts[2], balance + 1,
+<span class="del">            {'from': accounts[1]}</span>
+        )</pre></div>
+        <div class="code-card after"><div class="label"><span>Ape</span><span>after codemod</span></div>
+<pre><span class="add">import ape</span>
+
+def test_insufficient_balance(accounts, token):
+    balance = token.balanceOf(accounts[0])
+<span class="add">    token.approve(accounts[1], balance + 1, sender=accounts[0])</span>
+<span class="add">    with ape.reverts():</span>
+        token.transferFrom(
+            accounts[0], accounts[2], balance + 1,
+<span class="add">            sender=accounts[1]</span>
+        )</pre></div>
+      </div>
+    </div>
+
+    <div class="diff-pane" data-pane="ex2">
+      <h3>network.show_active() in subscripts and f-strings</h3>
+      <p class="desc">Bare <code>network.show_active()</code> rewrites correctly inside subscripts (<code>config["networks"][...]</code>) and f-strings.</p>
+      <div class="diff-grid">
+        <div class="code-card before"><div class="label"><span>Brownie</span><span>scripts/helpful_scripts.py</span></div>
+<pre><span class="del">from brownie import network, config, accounts</span>
+
+def get_account():
+    if (
+<span class="del">        network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS</span>
+<span class="del">        or network.show_active() in FORKED_LOCAL_ENVIRONMENTS</span>
+    ):
+        return accounts[0]
+
+
+def deploy_mocks():
+<span class="del">    print(f"Active network is {network.show_active()}")</span></pre></div>
+        <div class="code-card after"><div class="label"><span>Ape</span><span>after codemod</span></div>
+<pre><span class="add">from ape import networks, config, accounts</span>
+
+def get_account():
+    if (
+<span class="add">        networks.active_provider.network.name in LOCAL_BLOCKCHAIN_ENVIRONMENTS</span>
+<span class="add">        or networks.active_provider.network.name in FORKED_LOCAL_ENVIRONMENTS</span>
+    ):
+        return accounts[0]
+
+
+def deploy_mocks():
+<span class="add">    print(f"Active network is {networks.active_provider.network.name}")</span></pre></div>
+      </div>
+    </div>
+
+    <div class="diff-pane" data-pane="ex3">
+      <h3>Exception class names (with import preservation)</h3>
+      <p class="desc">Known Brownie exceptions are mapped to their Ape equivalents. The <code>exceptions</code> import is kept (Ape exposes <code>ape.exceptions</code> too).</p>
+      <div class="diff-grid">
+        <div class="code-card before"><div class="label"><span>Brownie</span><span>tests/test_fund_me.py</span></div>
+<pre><span class="del">from brownie import network, accounts, exceptions</span>
+import pytest
+
+def test_only_owner_can_withdraw():
+    bad_actor = accounts.add()
+<span class="del">    with pytest.raises(exceptions.VirtualMachineError):</span>
+        fund_me.withdraw({"from": bad_actor})</pre></div>
+        <div class="code-card after"><div class="label"><span>Ape</span><span>after codemod</span></div>
+<pre><span class="add">from ape import networks, accounts, exceptions</span>
+import pytest
+
+def test_only_owner_can_withdraw():
+    bad_actor = accounts.add()  <span class="todo"># TODO: Ape uses accounts.import_account_from_private_key</span>
+<span class="add">    with pytest.raises(exceptions.ContractLogicError):</span>
+        fund_me.withdraw(sender=bad_actor)</pre></div>
+      </div>
+    </div>
+
+    <div class="diff-pane" data-pane="ex4">
+      <h3>Wei("X") → convert("X", int)  with auto-import</h3>
+      <p class="desc">Wei calls become <code>convert</code> calls; <code>from ape.utils import convert</code> is auto-injected at the top of the file. Idempotent — won't double-import.</p>
+      <div class="diff-grid">
+        <div class="code-card before"><div class="label"><span>Brownie</span><span>scripts/setup.py</span></div>
+<pre><span class="del">from brownie import Wei, accounts</span>
+
+def amounts():
+<span class="del">    base = Wei("1 ether")</span>
+<span class="del">    fee = Wei("100 gwei")</span>
+    return base, fee</pre></div>
+        <div class="code-card after"><div class="label"><span>Ape</span><span>after codemod</span></div>
+<pre><span class="todo"># TODO(brownie-to-ape): no direct Ape equivalent for: Wei</span>
+<span class="add">from ape import accounts</span>
+
+<span class="add">from ape.utils import convert</span>
+def amounts():
+<span class="add">    base = convert("1 ether", int)</span>
+<span class="add">    fee = convert("100 gwei", int)</span>
+    return base, fee</pre></div>
+      </div>
+    </div>
+
+    <div class="diff-pane" data-pane="ex5">
+      <h3>accounts.at(addr, force=True) → accounts.impersonate_account(addr)</h3>
+      <p class="desc">Brownie's whale-impersonation idiom maps cleanly to Ape's dedicated API. Only fires when <code>force=True</code> is present — bare <code>accounts.at(addr)</code> stays alone (different operation).</p>
+      <div class="diff-grid">
+        <div class="code-card before"><div class="label"><span>Brownie</span><span>tests/conftest.py</span></div>
+<pre><span class="del">from brownie import accounts</span>
+
+@pytest.fixture
+def whale():
+<span class="del">    return accounts.at(WHALE_ADDR, force=True)</span>
+
+@pytest.fixture
+def existing_owner():
+    # No force=True — just address lookup, codemod leaves alone.
+    return accounts.at(OWNER_ADDR)</pre></div>
+        <div class="code-card after"><div class="label"><span>Ape</span><span>after codemod</span></div>
+<pre><span class="add">from ape import accounts</span>
+
+@pytest.fixture
+def whale():
+<span class="add">    return accounts.impersonate_account(WHALE_ADDR)</span>
+
+@pytest.fixture
+def existing_owner():
+    # No force=True — just address lookup, codemod leaves alone.
+    return accounts.at(OWNER_ADDR)</pre></div>
+      </div>
+    </div>
+
+    <div class="diff-pane" data-pane="ex6">
+      <h3>Multi-line interface call (Aave repo)</h3>
+      <p class="desc">Multi-pass composition: inner <code>network.show_active()</code> rewrite (Pass 2b) and outer <code>interface.X()</code> TODO (Pass 10) compose cleanly because Pass 10 replaces only the closing <code>)</code> token.</p>
+      <div class="diff-grid">
+        <div class="code-card before"><div class="label"><span>Brownie</span><span>scripts/aave_borrow.py</span></div>
+<pre>def get_lending_pool():
+    addr_provider = interface.ILendingPoolAddressesProvider(
+<span class="del">        config["networks"][network.show_active()]["lending_pool_addresses_provider"]</span>
+    )
+    pool_addr = addr_provider.getLendingPool()
+<span class="del">    pool = interface.ILendingPool(pool_addr)</span>
+    return pool</pre></div>
+        <div class="code-card after"><div class="label"><span>Ape</span><span>after codemod</span></div>
+<pre>def get_lending_pool():
+    addr_provider = interface.ILendingPoolAddressesProvider(
+<span class="add">        config["networks"][networks.active_provider.network.name]["lending_pool_addresses_provider"]</span>
+    )  <span class="todo"># TODO(brownie-to-ape): interface.X(addr) -> Ape's Contract(addr) with explicit ABI</span>
+    pool_addr = addr_provider.getLendingPool()
+<span class="add">    pool = interface.ILendingPool(pool_addr)</span>  <span class="todo"># TODO(brownie-to-ape): interface.X(addr) -> ...</span>
+    return pool</pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Why this is the strongest Brownie → Ape codemod on the registry</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+      <div style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px;">
+        <h3 style="margin:0 0 8px; color:var(--accent-2); font-size:1rem;">⚖️ Zero-FP discipline</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.92rem;">
+          15+ negative tests prove the codemod does NOT fire in FP-risk contexts: lambda, list comprehension,
+          walrus operator, async/await, OrderedDict, helper functions, malformed Python, dict spread, byte-string
+          keys, brownie-only-in-strings.
+        </p>
+      </div>
+      <div style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px;">
+        <h3 style="margin:0 0 8px; color:var(--accent-2); font-size:1rem;">🧪 Real-world breadth</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.92rem;">
+          Validated on 5 OSS repos covering different shapes: tutorial token contract, oracle (Chainlink),
+          multi-network lottery + VRF, Aave DeFi integration, and the Yearn Finance strategy template
+          (used by all Yearn strategy developers).
+        </p>
+      </div>
+      <div style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px;">
+        <h3 style="margin:0 0 8px; color:var(--accent-2); font-size:1rem;">🤖 AI-friendly TODOs</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.92rem;">
+          Patterns the codemod can't safely auto-rewrite (contract artifacts, accounts.add private key,
+          unknown exceptions) get specific, actionable inline TODO comments. AI cleanup steps know
+          exactly what to fix.
+        </p>
+      </div>
+      <div style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px;">
+        <h3 style="margin:0 0 8px; color:var(--accent-2); font-size:1rem;">🛠️ Adoption tooling</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.92rem;">
+          Bundled <code>scripts/preview.sh</code> for dry-run with structured stats, <code>scripts/benchmark.sh</code>
+          for repeatable timing across 5 repos, <code>scripts/migrate_config.py</code> for
+          <code>brownie-config.yaml</code> → <code>ape-config.yaml</code> conversion, and an asciinema cast.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    Built with ❤️ by <a href="https://github.com/PugarHuda">Pugar Huda Mantoro</a>
+    for the <a href="https://dorahacks.io/hackathon/codemod">Codemod Boring AI hackathon</a>.
+    MIT licensed. Asciinema cast playable at <a href="https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast"><code>demo/demo.cast</code></a>.
+  </div>
+</footer>
+
+<script>
+const tabs = document.querySelectorAll('.tab');
+const panes = document.querySelectorAll('.diff-pane');
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  panes.forEach(p => p.classList.remove('active'));
+  t.classList.add('active');
+  document.querySelector(`.diff-pane[data-pane="${t.dataset.tab}"]`).classList.add('active');
+}));
+</script>
+</body>
+</html>

@@ -7,6 +7,26 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.6] — 2026-05-02
+
+Yearn validation, accounts.impersonate, GitHub Pages live demo.
+
+### Added
+- **Pass 7b: `accounts.at(addr, force=True)` → `accounts.impersonate_account(addr)`**.
+  Brownie's whale-impersonation idiom now auto-rewrites to Ape's
+  dedicated API. Strict guard: `force=True` MUST be present (bare
+  `accounts.at(addr)` is a different operation and is left alone).
+- **5th OSS repo validation**:
+  [yearn/brownie-strategy-mix](https://github.com/yearn/brownie-strategy-mix)
+  — the official Yearn Finance strategy template used by all Yearn
+  strategy developers. **4 / 7 .py files modified, ~33 patterns
+  auto-migrated, 0 false positives.**
+- **`docs/index.html`** — single-file HTML live demo with interactive
+  before/after diff viewer (6 tabs), metrics, repo table, and CTA.
+  Deployable via GitHub Pages from `/docs`.
+- Fixture **62**: accounts-at-impersonate (positive: force=True
+  rewrites; negative: bare accounts.at unchanged).
+
 ## [0.7.3] — 2026-04-29
 
 Final QA pass before registry publish.

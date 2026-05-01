@@ -561,6 +561,31 @@ const codemod: Codemod<Python> = async (root) => {
   );
 
   // ────────────────────────────────────────────────────────────────────
+  // Transform 7b: accounts.at(addr, force=True) → accounts.impersonate_account(addr)
+  // Brownie's "force-attach to address" idiom maps cleanly to Ape's
+  // dedicated impersonate API. Only fires when force=True is explicitly
+  // present — `accounts.at(addr)` without force is a different operation
+  // (just an address-keyed accessor) and must NOT be rewritten.
+  // ────────────────────────────────────────────────────────────────────
+  const accountsAtForceCalls = rootNode.findAll({
+    rule: { pattern: "accounts.at($ADDR, force=True)" },
+  });
+  for (const callNode of accountsAtForceCalls) {
+    const argList = callNode.field("arguments");
+    if (!argList) continue;
+    const argChildren = argList
+      .children()
+      .filter((c) => !["(", ")", ","].includes(c.kind()));
+    // Defensive: should be exactly 2 args (addr + force=True kwarg)
+    if (argChildren.length !== 2) continue;
+    const addrNode = argChildren[0];
+    if (addrNode.kind() === "keyword_argument") continue;
+    edits.push(
+      callNode.replace(`accounts.impersonate_account(${addrNode.text()})`),
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   // Transform 8: detect Brownie's `def isolate(fn_isolation): pass` fixture
   // and prepend a TODO comment. Ape provides chain.isolate() and per-test
   // isolation by default, so this fixture is dead code in Ape.
