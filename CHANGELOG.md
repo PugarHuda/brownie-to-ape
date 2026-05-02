@@ -7,6 +7,26 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.9] — 2026-05-03
+
+Sync release: pushes the published case-study links into the registry README.
+
+### Added
+- README header now includes the **Published case studies** section
+  with the 3 publicly-indexable case-study URLs:
+  - [Medium — End-to-end token-mix migration with `ape test` 38/38 PASS](https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1)
+  - [dev.to — Yearn Finance DeFi-specific migration](https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57)
+  - [Medium — Engineering tradeoffs / why we said NO to features](https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b)
+- README badge: "published case studies: 3"
+- SUBMISSION.md "Why this stands out" gains rows for the 3 case studies
+  + the 4 ecosystem PRs (ApeWorX #2780, Codemod #2168, awesome-codemods #7,
+  awesome-python-codemods #1)
+
+### Notes
+- Codemod logic itself **unchanged from v0.7.6 / v0.7.7 / v0.7.8** — same
+  17 transform passes, same FP guards. This is a docs-sync release so
+  the Codemod registry README reflects the published case studies.
+
 ## [0.7.8] — 2026-05-02
 
 Ecosystem-adoption release: 2 community PRs filed alongside our docs polish.

@@ -14,7 +14,7 @@
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
 [![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-5-blue)](./CASE_STUDY.md)
 [![ape test](https://img.shields.io/badge/ape%20test%20on%20token--mix-38%20passed%20%2F%200%20failed-brightgreen)](./docs/ape-verify-token-mix.log)
-[![Version](https://img.shields.io/badge/version-0.7.8-blue)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.7.9-blue)](./CHANGELOG.md)
 [![ApeWorX docs PR](https://img.shields.io/badge/ApeWorX%20docs-PR%20%232780-blueviolet)](https://github.com/ApeWorX/ape/pull/2780)
 [![Codemod docs PR](https://img.shields.io/badge/Codemod%20docs-PR%20%232168-blueviolet)](https://github.com/codemod-com/codemod/pull/2168)
 [![Case studies](https://img.shields.io/badge/published%20case%20studies-3-success)](#published-case-studies)

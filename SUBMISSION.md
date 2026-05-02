@@ -19,7 +19,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 - Smart contracts
 
 ## Tracks Targeted
-- ✅ **Track 1: Production Migration Recipe** (Size: L, target $400) — published at v0.7.8 — 17 transform passes, 250 tests, 5 OSS repos validated incl. Yearn Finance, end-to-end `ape test` 38/38 PASS
+- ✅ **Track 1: Production Migration Recipe** (Size: L, target $400) — published at v0.7.9 — 17 transform passes, 250 tests, 5 OSS repos validated incl. Yearn Finance, end-to-end `ape test` 38/38 PASS
 - ✅ **Track 2: Public Case Study** (3 published, target $600) — see "Published Case Studies" links below
 - ✅ **Track 3: Framework Adoption** — 4 ecosystem PRs filed (target up to $2,000):
   - ApeWorX/ape issue [#2774](https://github.com/ApeWorX/ape/issues/2774) + PR [#2780](https://github.com/ApeWorX/ape/pull/2780) — official Brownie migration guide
@@ -83,9 +83,9 @@ Ran 13 tests in 0.001s. OK
 
 ### Code & Registry
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
-- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.8)
+- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.9)
 - **Live demo:** https://pugarhuda.github.io/brownie-to-ape/
-- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.8
+- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.9
 
 ### Published Case Studies (Track 2)
 - 📝 **Medium — End-to-end token-mix migration with `ape test` 38/38 PASS:** https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1
@@ -175,7 +175,7 @@ The submission deliberately prefers **FN over FP** wherever the right rewrite ca
 - [x] **End-to-end `ape compile` + `ape test` 38/38 PASS** on migrated token-mix
 - [x] README (EN + ID), CASE_STUDY, DEMO, FAQ, Troubleshooting, EVALUATOR, DEFERRED_FEATURES, AI-step demo all present
 - [x] CI workflows live: test (matrix), publish on tag, mutation (weekly), ape-verify (nightly), links (weekly)
-- [x] **Published to Codemod registry as `@pugarhuda/brownie-to-ape@0.7.8`** ⭐
+- [x] **Published to Codemod registry as `@pugarhuda/brownie-to-ape@0.7.9`** ⭐
 - [x] **Track 3 issue opened at ApeWorX/ape#2774** ⭐
 - [x] **Track 3 PR opened at ApeWorX/ape#2780** ⭐ (additive doc reference)
 - [x] LICENSE, SECURITY, CHANGELOG, CONTRIBUTING, FUNDING.yml all present

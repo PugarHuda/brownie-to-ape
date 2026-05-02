@@ -165,6 +165,6 @@ The `qa/version-consistency.test.ts` suite also verifies that no `MUTATION_SCORE
 
 ---
 
-**Source:** [github.com/PugarHuda/brownie-to-ape](https://github.com/PugarHuda/brownie-to-ape) · v0.7.8 · MIT
+**Source:** [github.com/PugarHuda/brownie-to-ape](https://github.com/PugarHuda/brownie-to-ape) · v0.7.9 · MIT
 **Codemod registry:** [`@pugarhuda/brownie-to-ape`](https://app.codemod.com/registry/@pugarhuda/brownie-to-ape)
 **Related:** [token-mix end-to-end case study](./MEDIUM_ARTICLE.md) · [Yearn DeFi migration](./CASE_STUDY_2_YEARN.md)

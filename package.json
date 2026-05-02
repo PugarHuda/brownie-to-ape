@@ -1,6 +1,6 @@
 {
   "name": "brownie-to-ape",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "Automated migration codemod from Brownie to ApeWorx Ape — 17-pass jssg transform, 250 tests (90 fixture + 125 Vitest + 35 pytest incl. Hypothesis fuzzer), zero false positives across 5 OSS repos incl. Yearn Finance.",
   "private": true,
   "engines": {
