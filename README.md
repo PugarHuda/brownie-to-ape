@@ -12,10 +12,16 @@ Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) 
 
 > Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes + Track 2: Public Case Study).
 
+> **Live demo:** https://pugarhuda.github.io/brownie-to-ape/
+> **Registry:** `@pugarhuda/brownie-to-ape` ([app.codemod.com](https://app.codemod.com/registry/@pugarhuda/brownie-to-ape))
+
 ## TL;DR
 
 ```bash
 # Run on any Brownie project (~3 seconds end-to-end after first invocation)
+npx codemod@latest @pugarhuda/brownie-to-ape -t /path/to/your/brownie/project
+
+# Or via direct workflow URL:
 npx codemod@latest workflow run \
   -w https://github.com/PugarHuda/brownie-to-ape \
   --target /path/to/your/brownie/project \

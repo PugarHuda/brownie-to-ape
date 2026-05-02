@@ -50,7 +50,7 @@ Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. Thousa
 12. Inline TODO for `Web3.toWei(...)` / `Web3.fromWei(...)` (web3.py-adjacent, common in Brownie projects)
 13. Detection of Brownie's `def isolate(fn_isolation): pass` fixture with TODO note that Ape provides `chain.isolate()` natively (only fires on trivial bodies — user-customized fixtures left alone)
 
-### Validated on four real OSS Brownie projects (all zero FP)
+### Validated on five real OSS Brownie projects (all zero FP)
 
 | Repo | Files modified | Patterns auto-migrated |
 |---|---|---|
@@ -58,7 +58,8 @@ Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. Thousa
 | PatrickAlphaC/brownie_fund_me | 5 / 6 .py | ~21 |
 | PatrickAlphaC/smartcontract-lottery | 5 / 7 .py | ~30 |
 | PatrickAlphaC/aave_brownie_py_freecode | 4 / 5 .py | ~24 |
-| **Combined** | **18 / 23 (78%)** | **~137** |
+| yearn/brownie-strategy-mix ⭐ | 4 / 7 .py | ~33 |
+| **Combined** | **22 / 30 (73%)** | **~170** |
 
 ### Test suite
 - **61 fixture tests** (jssg `input.py` + `expected.py` pairs) — 15 of those are negative tests proving the codemod does NOT fire in FP-risk contexts (lambda, list comprehension, walrus, async/await, OrderedDict, helper functions, malformed Python, brownie-only-in-string, dict-spread, etc.)

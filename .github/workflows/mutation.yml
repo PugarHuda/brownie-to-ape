@@ -1,0 +1,27 @@
+name: Mutation testing (weekly)
+
+# Stryker mutation testing — slow (~5-10 min). Runs on a weekly cron
+# and on manual dispatch, NOT on every push/PR.
+
+on:
+  schedule:
+    - cron: "0 4 * * 1" # Mondays 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  mutation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save @stryker-mutator/core @stryker-mutator/typescript-checker @stryker-mutator/vitest-runner
+      - run: npx stryker run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stryker-html-report
+          path: reports/mutation/
