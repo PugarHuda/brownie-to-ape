@@ -74,10 +74,17 @@ jobs:
           echo "---"
           grep -rn "TODO(brownie-to-ape)" --include="*.py" . | head -20 || true
 
+      - name: Sanitize artifact name (GitHub Actions disallows /)
+        id: artifact_name
+        run: |
+          safe_name="${{ matrix.repo }}"
+          safe_name="${safe_name//\//-}"
+          echo "name=ape-verify-${safe_name}" >> "$GITHUB_OUTPUT"
+
       - name: Upload migrated repo as artifact (for human review)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ape-verify-${{ matrix.repo }}
+          name: ${{ steps.artifact_name.outputs.name }}
           path: target/
           if-no-files-found: warn
