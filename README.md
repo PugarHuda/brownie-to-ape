@@ -17,6 +17,7 @@
 [![Version](https://img.shields.io/badge/version-0.7.9-blue)](./CHANGELOG.md)
 [![ApeWorX docs PR](https://img.shields.io/badge/ApeWorX%20docs-PR%20%232780-blueviolet)](https://github.com/ApeWorX/ape/pull/2780)
 [![Codemod docs PR](https://img.shields.io/badge/Codemod%20docs-PR%20%232168-blueviolet)](https://github.com/codemod-com/codemod/pull/2168)
+[![Brownie upstream PR](https://img.shields.io/badge/Brownie%20upstream-PR%20%232145-blueviolet)](https://github.com/eth-brownie/brownie/pull/2145)
 [![Case studies](https://img.shields.io/badge/published%20case%20studies-3-success)](#published-case-studies)
 [![Mutation](https://img.shields.io/badge/mutation%20baseline-38.57%25-yellow)](./reports/mutation/mutation.html)
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
