@@ -62,13 +62,14 @@ Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. Thousa
 | **Combined** | **22 / 30 (73%)** | **~170** |
 
 ### Test suite
-- **61 fixture tests** (jssg `input.py` + `expected.py` pairs) — 15 of those are negative tests proving the codemod does NOT fire in FP-risk contexts (lambda, list comprehension, walrus, async/await, OrderedDict, helper functions, malformed Python, brownie-only-in-string, dict-spread, etc.)
-- **13 Python unit tests** for the YAML config translator
-- **CI on every push** ([test.yml](https://github.com/PugarHuda/brownie-to-ape/blob/main/.github/workflows/test.yml)), passing badge live in README
+- **90 fixture tests** (jssg `input.py` + `expected.py` pairs) — 15+ are negative tests proving the codemod does NOT fire in FP-risk contexts (lambda, list comprehension, walrus, async/await, OrderedDict, helper functions, malformed Python, brownie-only-in-string, dict-spread, etc.)
+- **125 Vitest tests** for pure helpers, property invariants, and QA (version consistency, docs integrity, perf budget, golden-master)
+- **35 pytest tests** for the YAML config translator (16 Describe* + 13 legacy `TestCase` + **6 Hypothesis property-based fuzz tests**)
+- **CI on every push** ([test.yml](https://github.com/PugarHuda/brownie-to-ape/blob/main/.github/workflows/test.yml)), green badge live in README
 
 ```
-$ npx codemod@latest jssg test -l python ./scripts/codemod.ts ./tests/fixtures
-test result: ok. 55 passed; 0 failed; 0 ignored
+$ npm test
+test result: ok. 90 passed; 0 failed; 0 ignored
 
 $ python -m unittest tests.test_migrate_config -v
 Ran 13 tests in 0.001s. OK

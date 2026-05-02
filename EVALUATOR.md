@@ -163,7 +163,7 @@ Aggregate: **18/23 .py files modified, ~146 patterns auto-migrated, 0 FP across 
    element (#54), walrus operator (#49), async/await wrapping (#50),
    try/except guarded import (#51), brownie-only-in-string (#55), etc.
 
-2. **13 Python unit tests** for the YAML config translator (`scripts/migrate_config.py`).
+2. **35 Python pytest tests** for the YAML config translator (`scripts/migrate_config.py`) — 16 Describe* + 13 legacy `unittest.TestCase` + **6 Hypothesis property-based fuzz tests**.
 
 Run both:
 

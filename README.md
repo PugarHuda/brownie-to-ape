@@ -227,15 +227,16 @@ bash scripts/preflight.sh /path/to/repo   # pre-flight pattern surface estimate
 bash scripts/preview.sh /path/to/repo     # dry-run wrapper with stats
 ```
 
-### Test suite (238 active tests, 0 failures)
+### Test suite (250 active tests, 0 failures)
 
 | Suite | Tests | Tool | Purpose |
 |---|---|---|---|
-| jssg fixtures | **84** | Codemod CLI | full transform snapshot tests |
+| jssg fixtures | **90** | Codemod CLI | full transform snapshot tests (incl. 6 new edge-case fixtures: deeply nested attrs, multi-line imports, comment-preserving tx-dicts, FP guards) |
 | Vitest unit | 50 | Vitest | pure helpers in isolation |
 | Vitest property | 11 active + 6 gated | Vitest | idempotency, determinism |
 | Vitest QA | 53 | Vitest | version, docs, perf budget, golden-master |
 | Python pytest | 29 | pytest | YAML config translator (Describe* + Test*) |
+| Python Hypothesis | **6** | Hypothesis + pytest | property-based fuzzer on YAML translator (idempotency, determinism, serializability) |
 | **Plus**: real-repo CI verification | — | GitHub Actions | [`ape-verify.yml`](./.github/workflows/ape-verify.yml) runs codemod inside Docker on freshly-cloned repos, see [APE_VERIFY_REPORT.md](./APE_VERIFY_REPORT.md) |
 
 ## Rollback
