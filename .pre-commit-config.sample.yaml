@@ -1,0 +1,42 @@
+# Sample pre-commit hook config for Brownie users running brownie-to-ape.
+#
+# Drop this into your Brownie repo as `.pre-commit-config.yaml`, install
+# pre-commit (`pipx install pre-commit && pre-commit install`), and the
+# codemod will run automatically on staged Python files mentioning
+# `brownie`. Useful during a gradual / file-by-file migration.
+#
+# Reference: https://pre-commit.com/
+
+repos:
+  - repo: local
+    hooks:
+      - id: brownie-to-ape
+        name: brownie-to-ape codemod
+        entry: bash -c '
+          # Only run on staged .py files that contain a brownie reference.
+          files=$(git diff --cached --name-only --diff-filter=ACM | grep "\\.py$" | xargs grep -l "brownie" 2>/dev/null);
+          if [ -z "$files" ]; then exit 0; fi;
+          echo "Running brownie-to-ape on staged Brownie files...";
+          npx codemod@latest @pugarhuda/brownie-to-ape --target . --no-interactive --allow-dirty;
+          # Re-stage any modifications produced by the codemod
+          for f in $files; do
+            git add "$f";
+          done
+        '
+        language: system
+        pass_filenames: false
+        types: [python]
+        always_run: false
+
+      - id: brownie-to-ape-todo-check
+        name: warn on remaining # TODO(brownie-to-ape) markers
+        entry: bash -c '
+          remaining=$(grep -rn "TODO(brownie-to-ape)" --include="*.py" . | head -5);
+          if [ -n "$remaining" ]; then
+            echo "::warning:: Codemod TODOs still present (review before merging):";
+            echo "$remaining";
+          fi
+        '
+        language: system
+        pass_filenames: false
+        always_run: true

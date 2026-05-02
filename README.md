@@ -2,13 +2,14 @@
 
 [![CI](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml/badge.svg)](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
-[![Tests](https://img.shields.io/badge/tests-55%20jssg%20%2B%2013%20unit-brightgreen)](./tests)
+[![Tests](https://img.shields.io/badge/tests-77%20fixture%20%2B%20154%20unit-brightgreen)](./tests)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
-[![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-4-blue)](./CASE_STUDY.md)
-[![Version](https://img.shields.io/badge/version-0.7.3-blue)](./CHANGELOG.md)
+[![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-5-blue)](./CASE_STUDY.md)
+[![Version](https://img.shields.io/badge/version-0.7.6-blue)](./CHANGELOG.md)
+[![Mutation](https://img.shields.io/badge/mutation%20baseline-38.57%25-yellow)](./reports/mutation/mutation.html)
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 
-Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 12-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on 4 real OSS Brownie projects with **zero false positives**.
+Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 17-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on **5 real OSS Brownie projects (incl. Yearn Finance) with zero false positives**.
 
 > Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes + Track 2: Public Case Study).
 
