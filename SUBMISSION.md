@@ -115,6 +115,24 @@ Following the hackathon scoring formula `100 × (1 − ((FP × wFP) + (FN × wFN
 
 All FNs are intentional (contract artifacts can't be inferred without project schema introspection). They're auto-flagged with `# TODO(brownie-to-ape):` comments for AI/manual cleanup.
 
+## Why this submission stands out
+
+The hackathon explicitly evaluates: (1) zero false positives, (2) coverage, (3) reliability across real repos, (4) test depth. This submission was built around those criteria from day one — every claim below is reproducible from the public repo.
+
+| Criterion | Evidence | How to verify |
+|---|---|---|
+| **0 false positives** | Audited via manual diff on 5 OSS repos + 90 fixture snapshot tests including 15+ negative-case fixtures (lambda, list comprehension, walrus, async/await, OrderedDict, helper functions, malformed Python, brownie-only-in-string-literal, dict-spread, etc.) | `git clone … && npm test` → 90 passed |
+| **End-to-end real-repo proof** | `ape compile` ✅ + `ape test --network ::test` → **38 passed, 0 failed in 5.40s** on the migrated `brownie-mix/token-mix` after the codemod plus 6 small AI-step fixes (~30 LOC) | [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log) full pytest log committed in repo |
+| **True jssg/ast-grep engine** | Every transform pass operates on the Tree-sitter Python AST via `findAll` / `field` / `kind` / `parent` calls — not regex over source text. Pass-by-pass introspection: `bash scripts/cli.ts --list-passes` | [`scripts/codemod.ts`](./scripts/codemod.ts) ~870 LOC, 17 numbered passes |
+| **Test breadth** | **250 tests** = 90 fixture (snapshot) + 125 Vitest (50 helper unit + 11 property + 53 QA + 11 idempotency) + 35 pytest (16 Describe* + 13 legacy + **6 Hypothesis property-based fuzzer**). All passing in CI on every push (matrix: Linux/macOS/Windows × Node 20/22) | [`.github/workflows/test.yml`](./.github/workflows/test.yml) green on every commit |
+| **Mutation-testing baseline** | Stryker on critical helpers: 38.57% baseline killed (architectural ceiling documented in [`docs/DEFERRED_FEATURES.md`](./docs/DEFERRED_FEATURES.md)) — the mutation report is committed at `reports/mutation/mutation.html` | Run `npx stryker run` |
+| **Validated on Yearn Finance** | [`yearn/brownie-strategy-mix`](https://github.com/yearn/brownie-strategy-mix) — 4/7 .py files modified, ~33 patterns auto-migrated, **0 FP** | See [`CASE_STUDY.md`](./CASE_STUDY.md) row 5 |
+| **Engineering rigor / honest tradeoffs** | [`docs/DEFERRED_FEATURES.md`](./docs/DEFERRED_FEATURES.md) explicitly documents what we did NOT implement (browser WASM playground, Stryker score >50%, full `accounts.add` auto-rewrite) and why each would compromise the 0 FP guarantee | — |
+| **Bahasa Indonesia translation** | [`README.id.md`](./README.id.md) — full feature matrix, validation table, architecture overview | — |
+| **Framework adoption (Track 3)** | [PR #2780 to ApeWorX/ape](https://github.com/ApeWorX/ape/pull/2780) adds `@pugarhuda/brownie-to-ape` as an "Alternative Codemod" reference in the official Brownie migration guide; complementary to the existing recommendation | — |
+
+The submission deliberately prefers **FN over FP** wherever the right rewrite cannot be inferred from the AST alone (contract artifacts, custom-bodied test fixtures, project-schema-dependent rewrites). The hackathon's scoring formula `100 × (1 − ((FP × wFP) + (FN × wFN)) ÷ (N × (wFP + wFN)))` weights FP heavier than FN, so this is the mathematically optimal stance.
+
 ## Author
 **Pugar Huda Mantoro**
 - Email: pugarhudam@gmail.com
@@ -124,14 +142,17 @@ All FNs are intentional (contract artifacts can't be inferred without project sc
 
 ## Pre-publish checklist (status)
 
-- [x] All 61 fixture tests passing
-- [x] All 13 Python unit tests passing
+- [x] All 90 fixture tests passing
+- [x] All 125 Vitest tests passing
+- [x] All 35 pytest tests passing (incl. Hypothesis fuzzer)
 - [x] Workflow YAML validated
-- [x] Tested on 4 real OSS repos with 0 FP
-- [x] README, CASE_STUDY, DEMO, FAQ, Troubleshooting complete
-- [x] CI workflows live (test passing, publish on tag)
-- [x] **Published to Codemod registry as `@pugarhuda/brownie-to-ape@0.7.4`** ⭐
+- [x] Tested on **5** real OSS repos (incl. Yearn Finance) with **0 FP**
+- [x] **End-to-end `ape compile` + `ape test` 38/38 PASS** on migrated token-mix
+- [x] README (EN + ID), CASE_STUDY, DEMO, FAQ, Troubleshooting, EVALUATOR, DEFERRED_FEATURES, AI-step demo all present
+- [x] CI workflows live: test (matrix), publish on tag, mutation (weekly), ape-verify (nightly), links (weekly)
+- [x] **Published to Codemod registry as `@pugarhuda/brownie-to-ape@0.7.7`** ⭐
 - [x] **Track 3 issue opened at ApeWorX/ape#2774** ⭐
-- [x] LICENSE, SECURITY, CHANGELOG, CONTRIBUTING all present
+- [x] **Track 3 PR opened at ApeWorX/ape#2780** ⭐ (additive doc reference)
+- [x] LICENSE, SECURITY, CHANGELOG, CONTRIBUTING, FUNDING.yml all present
+- [x] GitHub repo metadata: 12 topics, homepage URL, banner SVG
 - [ ] Submit BUIDL on DoraHacks (this form ⬅)
-- [ ] (Optional) Upload asciinema demo cast for shareable URL

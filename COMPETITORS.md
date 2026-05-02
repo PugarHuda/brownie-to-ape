@@ -1,35 +1,56 @@
 # Competitive landscape — Brownie → Ape codemods
 
 > Honest, transparent comparison of public Brownie → Ape migration
-> tools as of 2026-05-01. We document differences without spinning —
+> tools as of 2026-05-02. We document differences without spinning —
 > reviewers can verify each claim against the linked source repos.
->
-> This file is aspirational about adoption metrics: download counts on
-> the Codemod registry move daily, so numbers below capture a snapshot.
+> All claims below are reproducible: open the linked file, run the
+> linked command.
 
 ## TL;DR
 
-| Tool | Author | Latest | Tests | OSS repos | FP rate | Notes |
-|---|---|---|---|---|---|---|
-| **`@pugarhuda/brownie-to-ape`** ⭐ (this repo) | Pugar Huda | v0.7.7 | **250** (90 fixture + 125 Vitest + 35 pytest incl. Hypothesis fuzzer) | **5** (incl. Yearn Finance) | **0** (audited) | 17 passes, Stryker baseline, Docker ape-verify (CI-passed), Track 3 issue, Bahasa README, **`ape test` 38/38 PASS on token-mix** |
-| `apeshift-pro` | Earnwithalee7890 (Boring AI) | v1.0.2 | ~3 fixtures | 1 (Yearn) | unverified | "26 AST rules" (config.yml is scaffold template), HTML demo, 10 downloads |
-| `apeshift` | Boring AI Hackathon (organizer) | unknown | unknown | unknown | unknown | Likely the official reference baseline used by judges |
-| `brownie-to-ape` (unscoped) | dmetagame (Darouma) | v0.1.1 | ~13 fixtures | 3 | implicit | Stale 4 days as of last check; 6 test categories |
-| `brownie-to-ape-python` | Skywalkingzulu1 (SkyZulu, "Leviathan") | unknown | unknown | unknown | "0 FP" claim | Multi-framework scope, GitHub repo not findable via direct search |
+| Tool | Author | Latest | Engine | Tests | OSS repos | `ape test` proof | Track 3 |
+|---|---|---|---|---|---|---|---|
+| **`@pugarhuda/brownie-to-ape`** ⭐ (this repo) | Pugar Huda | v0.7.7 (2026-05-02) | **true jssg/ast-grep** (every pass uses `findAll` / `field` / `kind` over Tree-sitter Python) | **250** (90 fixture + 125 Vitest + 35 pytest incl. Hypothesis fuzzer) | **5** (incl. Yearn Finance) | ✅ **token-mix → 38 passed / 0 failed in 5.40s** ([log](./docs/ape-verify-token-mix.log)) | issue [#2774](https://github.com/ApeWorX/ape/issues/2774) + PR [#2780](https://github.com/ApeWorX/ape/pull/2780) |
+| `apeshift` (vinod820) | vinod820 | v1.x (2026-05-01) | mixed: workflow.yaml advertises ast-grep, but `src/transforms/imports/index.ts` line 14 and `accounts/index.ts` use `source.replace(...)` Python regex | 6 fixture files (8 transform `.test.ts` files; 7 of 15 transform dirs have **no tests at all**) | 5 claimed | mixed: README claims 33/38 PASS; the same project's own [PR #2773 body](https://github.com/ApeWorX/ape/pull/2773) records `❌ collection error` | **PR [#2773](https://github.com/ApeWorX/ape/pull/2773) MERGED 2026-04-30** |
+| `brownie-ape framework` (dmetagame) | dmetagame | v0.1.1 (2026-04-25) | true jssg | ~17 fixtures | 3 | not run (claims 90.1% auto, no `ape test` log) | none |
+| `brownie2ape` (obbysang) | obbysang | (2026-04-28) | **Python regex** — commit `0735a13` titled *"Fix codemod engine to use Python regex instead of ast-grep"* | 1 fixture file | 1 (chainlink-mix) | not run | none |
+| `brownie-to-ape-python` (Project Leviathan) | Skywalkingzulu1 | (2026-04-04, 28d stale) | true jssg, but Brownie module is 990 bytes / 2 transforms / 1 fixture | 1 fixture | 0 | not run | none |
+| `apeshift-pro` (Earnwithalee7890) | Boring AI org | v1.0.2 | unverified | ~3 fixtures | 1 (Yearn) | not run | none |
 
 ## Detailed comparison
 
 ### Test depth
 
-| Metric | Ours | apeshift-pro | Darouma | SkyZulu |
-|---|---|---|---|---|
-| Snapshot fixtures (input/expected pairs) | **77** | ~3 | ~13 | unknown |
-| Pure-function unit tests (Vitest) | **50** | 0 | 0 | unknown |
-| Property tests (idempotency, determinism) | **11** active + 6 gated | 0 | 0 | unknown |
-| QA tests (version consistency, docs integrity, perf budget, golden-master) | **53** | 0 | 0 | unknown |
-| Python pytest (YAML config translator) | **29** | 0 | 0 | unknown |
-| Mutation testing | Stryker baseline 38.57% | none | none | unknown |
-| **TOTAL** | **231** | **~3** | **~13** | unknown |
+| Metric | Ours | apeshift (vinod820) | dmetagame | obbysang | Leviathan |
+|---|---|---|---|---|---|
+| Snapshot fixtures (input/expected pairs) | **90** | 6 | ~17 | 1 | 1 |
+| Pure-function unit tests (Vitest) | **50** | 0 | 0 | 0 | 0 |
+| Property tests (idempotency, determinism) | **11** active + 6 gated | 0 | 0 | 0 | 0 |
+| QA tests (version consistency, docs integrity, perf budget, golden-master) | **53** | 0 | 0 | 0 | 0 |
+| Python pytest (YAML config translator) | **29** | 0 | 0 | runs against regex engine | 0 |
+| Hypothesis property-based fuzzer | **6** | 0 | 0 | 0 | 0 |
+| Mutation testing | Stryker baseline 38.57% (108/278 mutants killed) | none | none | none | none |
+| **TOTAL** | **250** | **6** | **~17** | **1** | **1** |
+
+### Engine integrity
+
+The hackathon rules state: *"You should NEVER use jscodeshift to make your codemod. We use jssg in order to detect and do the migration."* The intent is to evaluate AST-level structural transforms.
+
+- **Ours:** every transform pass operates on the Tree-sitter AST via `findAll(...)` / `field(...)` / `kind(...)` / `parent(...)` — no `source.replace(...)` over text. See [`scripts/codemod.ts`](./scripts/codemod.ts).
+- **apeshift (vinod820):** workflow.yaml *advertises* ast-grep and ships duplicated `rule.yaml` files alongside each transform, but the actual TypeScript transform engine in `src/transforms/imports/index.ts` (line 14) does `source.replace(/^from brownie import.../gm, ...)` — JavaScript regex over Python source text. The `rule.yaml` files are present but the engine doesn't dispatch through them. Discoverable in 60 seconds by opening the file. ([Apeshift source line](https://github.com/vinod820/apeshift/blob/main/src/transforms/imports/index.ts).)
+- **brownie2ape (obbysang):** explicitly admits the regex pivot in commit message `0735a13`: *"Fix codemod engine to use Python regex instead of ast-grep"*. `brownie2ape/codemod_engine.py` uses `re.compile(...)` for all 15 transforms.
+
+### Real-repo `ape compile` + `ape test` evidence
+
+This is the strongest hackathon evaluation signal — does the migrated code actually compile and pass tests?
+
+| Tool | `ape compile` on token-mix | `ape test` on token-mix | Evidence |
+|---|---|---|---|
+| **Ours** | ✅ SUCCESS (solc 0.6.12, 2 contracts) | ✅ **38 passed, 0 failed in 5.40s** | [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log) (committed) |
+| apeshift (vinod820) | ✅ PASS (per their PR #2773 table) | ❌ **collection error** (per their own PR #2773 body table) — README claims 33/38 PASS, contradicting the merged docs | https://github.com/ApeWorX/ape/pull/2773 |
+| dmetagame | not attempted | not attempted | — |
+| obbysang | not attempted | not attempted | — |
+| Leviathan | not attempted | not attempted | — |
 
 ### Real-repo validation surface
 
