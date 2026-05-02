@@ -7,6 +7,58 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.7] — 2026-05-02
+
+End-to-end proof: codemod + AI-step + `ape compile` + `ape test` PASS on
+real OSS repo. Plus 6 new fixtures, Hypothesis fuzzer, Bahasa
+Indonesia README, AI-step demo doc, deferred-features rationale doc.
+
+### Added
+- **End-to-end verification on `brownie-mix/token-mix`** —
+  [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log)
+  captures `ape compile` + `ape test --network ::test` →
+  **38 passed, 0 failed in 5.40s**. The full hackathon evaluation
+  pipeline (codemod → AI-step → `ape compile && ape test`) now has
+  reproducible green-log evidence.
+- **`demo/ai-step-demo.md`** — step-by-step AI/manual cleanup
+  walkthrough using token-mix as the reference repo (~30 LOC of fixes
+  across 4 files).
+- **`docs/DEFERRED_FEATURES.md`** — rationale for explicitly NOT
+  implementing browser WASM playground, Stryker score >50%, full
+  per-pass fixture saturation, pre-commit hook, and full
+  `accounts.add` / `interface.X` auto-rewrite (would compromise the 0
+  FP guarantee).
+- **`README.id.md`** — full Bahasa Indonesia translation.
+- **`tests/test_migrate_config_fuzz.py`** — 6 Hypothesis property
+  tests on the YAML translator (idempotency, determinism,
+  serializability under arbitrary inputs).
+- **6 new jssg fixtures (85-90)** covering deeply nested brownie
+  attribute access, multi-line imports, comment-preserving tx-dicts,
+  empty-string `from` value, ZERO_ADDRESS-only imports, and FP-guards
+  for string-literal `"from"` usage.
+- **`engines.node>=20`** declared in `package.json`.
+- **`.github/FUNDING.yml`** + GitHub repo metadata polished (12
+  topics, homepage URL, refreshed description).
+- README badge: `ape test on token-mix: 38 passed / 0 failed`.
+
+### Changed
+- Test count totals: **250 tests** (90 fixture + 125 Vitest + 35
+  pytest). All passing.
+- `pytest.ini` adds `-p no:ape_test` to disable the eth-ape pytest
+  plugin during our standalone codemod tests (prevents intermittent
+  fixture-init crashes on Python 3.13 + Windows).
+- Cross-links between `README.md` ↔ `README.id.md`,
+  `APE_VERIFY_REPORT.md` ↔ `docs/ape-verify-token-mix.log`,
+  `DEMO.md` ↔ `demo/ai-step-demo.md`, `EVALUATOR.md` ↔
+  `docs/DEFERRED_FEATURES.md`.
+
+### Notes
+- Codemod logic itself **unchanged from v0.7.6** — this is a
+  documentation, evidence, and test-coverage release. No new transform
+  passes; existing 17-pass behavior is identical.
+- Mutation baseline still 38.57% (architectural constraint
+  documented in `docs/DEFERRED_FEATURES.md`).
+
 ## [0.7.6] — 2026-05-02
 
 Yearn validation, accounts.impersonate, GitHub Pages live demo.

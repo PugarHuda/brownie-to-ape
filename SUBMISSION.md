@@ -19,7 +19,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 - Smart contracts
 
 ## Tracks Targeted
-- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.6
+- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.7
 - ✅ **Track 2: Public Case Study** (target $200) — `CASE_STUDY.md` + `DEMO.md` + asciinema cast
 - ✅ **Track 3: Framework Adoption** — issue [#2774](https://github.com/ApeWorX/ape/issues/2774) opened at ApeWorX/ape (target up to $2,000)
 
@@ -76,12 +76,12 @@ Ran 13 tests in 0.001s. OK
 
 ## Links
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
-- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.6)
+- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.7)
 - **Case Study:** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
 - **Demo (curated diffs):** https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md
 - **Asciinema cast:** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast
 - **Track 3 issue at ApeWorX/ape:** https://github.com/ApeWorX/ape/issues/2774
-- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.6
+- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.7
 
 ## How to test (for evaluators)
 

@@ -1,12 +1,16 @@
 # brownie-to-ape
 
+<p align="center">
+  <img src="./docs/banner.svg" alt="brownie-to-ape — 250 tests, 5 OSS repos, 0 false positives, ape test 38/38 passed" width="100%" />
+</p>
+
 [![CI](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml/badge.svg)](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
 [![Tests](https://img.shields.io/badge/tests-90%20fixture%20%2B%20154%20unit-brightgreen)](./tests)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
 [![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-5-blue)](./CASE_STUDY.md)
 [![ape test](https://img.shields.io/badge/ape%20test%20on%20token--mix-38%20passed%20%2F%200%20failed-brightgreen)](./docs/ape-verify-token-mix.log)
-[![Version](https://img.shields.io/badge/version-0.7.6-blue)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.7.7-blue)](./CHANGELOG.md)
 [![Mutation](https://img.shields.io/badge/mutation%20baseline-38.57%25-yellow)](./reports/mutation/mutation.html)
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 

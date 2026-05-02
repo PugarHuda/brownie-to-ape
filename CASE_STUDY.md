@@ -24,6 +24,15 @@ The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs 
 
 Plus end-to-end CI verification via [`ape-verify.yml`](./.github/workflows/ape-verify.yml) running the codemod inside Docker on freshly-cloned `brownie-mix/token-mix` and `PatrickAlphaC/brownie_fund_me`. Latest passing run: [#25242674346](https://github.com/PugarHuda/brownie-to-ape/actions/runs/25242674346) (4m18s). See [APE_VERIFY_REPORT.md](./APE_VERIFY_REPORT.md) for honest mapping of hackathon eval 3-step flow ↔ codemod behavior.
 
+> 🟢 **End-to-end proof captured locally:** after applying the codemod
+> + 6 AI-step manual fixes (~30 LOC across 4 files) on
+> `brownie-mix/token-mix`, `ape compile` succeeds (solc 0.6.12) and
+> `ape test --network ::test` returns **38 passed, 0 failed in 5.40s**.
+> Full passing log: [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log).
+> Step-by-step AI-fix walkthrough: [`demo/ai-step-demo.md`](./demo/ai-step-demo.md).
+> All three hackathon evaluation steps now have reproducible green
+> evidence.
+
 Also: [Stryker mutation-testing baseline](./reports/mutation/mutation.html) (38.57%, 108/278 mutants killed), [live demo](https://pugarhuda.github.io/brownie-to-ape/), [Track 3 issue](https://github.com/ApeWorX/ape/issues/2774) at ApeWorX/ape, [comprehensive API reference](./API_REFERENCE.md), and [transparent competitor analysis](./COMPETITORS.md).
 
 ---

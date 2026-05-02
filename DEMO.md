@@ -1,7 +1,16 @@
 # Demo — what brownie-to-ape actually does
 
-Real diffs from running the codemod on four public OSS Brownie repos. **Zero
-false positives** across all of them.
+Real diffs from running the codemod on five public OSS Brownie repos
+(token-mix, brownie_fund_me, smartcontract-lottery, aave_brownie_py_freecode,
+yearn/brownie-strategy-mix). **Zero false positives** across all of them.
+
+> 🟢 **End-to-end proof:** the migrated `brownie-mix/token-mix` actually
+> runs `ape compile && ape test --network ::test` → **38 passed in 5.40s**.
+> See [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log)
+> for the full passing log and
+> [`demo/ai-step-demo.md`](./demo/ai-step-demo.md) for the 6 manual
+> AI-step fixes (~30 LOC across 4 files) that bridge the codemod to a
+> green test suite.
 
 Reproduce these results in ~30 seconds:
 
