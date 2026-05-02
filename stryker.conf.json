@@ -8,9 +8,10 @@
     "configFile": "vitest.config.ts"
   },
   "mutate": [
-    "tests/unit/_helpers.ts"
+    "tests/unit/_helpers.ts",
+    "tests/unit/pure-helpers.test.ts"
   ],
-  "_mutate_comment": "We mutate tests/unit/_helpers.ts which holds standalone copies of pure helpers from scripts/codemod.ts. The codemod.ts copies stay inlined for jssg sandbox compatibility — drift is caught by pure-helpers.test.ts assertions. Mutating _helpers.ts gives a meaningful signal: every surviving mutant represents a real test gap, not a test-name string tweak.",
+  "_mutate_comment": "Mutates BOTH _helpers.ts (real helper code) AND pure-helpers.test.ts (which contained the original inline copies). The Stryker vitest-runner has trouble resolving relative imports inside its sandbox when only a non-test .ts file is mutated; including the test file too lets the runner find tests. v0.7.6 baseline 38.57% was on test-file-only; mutation report regenerates per run.",
   "coverageAnalysis": "off",
   "thresholds": {
     "high": 80,
