@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" font-family="ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1116"/>
+      <stop offset="1" stop-color="#1a1f2c"/>
+    </linearGradient>
+    <linearGradient id="brownie" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a16207"/>
+      <stop offset="1" stop-color="#5c3a0a"/>
+    </linearGradient>
+    <linearGradient id="ape" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#34d399"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="arrow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a16207"/>
+      <stop offset="0.5" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+
+  <!-- Code bracket frame -->
+  <g stroke="#3b82f6" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+    <path d="M 44 76 L 32 76 L 32 180 L 44 180"/>
+    <path d="M 212 76 L 224 76 L 224 180 L 212 180"/>
+  </g>
+
+  <!-- B → A monogram -->
+  <text x="62" y="172" font-size="116" font-weight="800" fill="url(#brownie)">B</text>
+  <g transform="translate(112 116)">
+    <path d="M 0 12 L 28 12 M 22 4 L 30 12 L 22 20" stroke="url(#arrow)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="148" y="172" font-size="116" font-weight="800" fill="url(#ape)">A</text>
+</svg>

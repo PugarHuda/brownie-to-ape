@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./docs/logo.svg" alt="brownie-to-ape logo" width="180" />
+</p>
+
 # brownie-to-ape
 
 <p align="center">
