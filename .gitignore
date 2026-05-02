@@ -45,7 +45,7 @@ __pycache__/
 node_modules/
 coverage/
 .vitest-cache/
-reports/
+# reports/ intentionally NOT ignored — we keep mutation HTML as evidence
 
-# Stryker artifacts
+# Stryker temp dir (NOT the report — we keep that as evidence)
 .stryker-tmp/
