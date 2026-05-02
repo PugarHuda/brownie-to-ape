@@ -8,9 +8,10 @@
     "configFile": "vitest.config.ts"
   },
   "mutate": [
-    "tests/unit/**/*.test.ts"
+    "tests/unit/_helpers.ts"
   ],
-  "_mutate_comment": "We mutate test files because the helpers under test are inlined in pure-helpers.test.ts (jssg sandbox doesn't allow extracting helpers to a separate runtime-importable module). Most surviving mutants are test-name strings (low signal). Tracked as a baseline; not enforced as a CI block during pre-1.0. v0.7.6 baseline: 38.57% (108 killed / 278 mutants). See reports/mutation/mutation.html.",
+  "_mutate_comment": "We mutate tests/unit/_helpers.ts which holds standalone copies of pure helpers from scripts/codemod.ts. The codemod.ts copies stay inlined for jssg sandbox compatibility — drift is caught by pure-helpers.test.ts assertions. Mutating _helpers.ts gives a meaningful signal: every surviving mutant represents a real test gap, not a test-name string tweak.",
+  "coverageAnalysis": "off",
   "thresholds": {
     "high": 80,
     "low": 30,
