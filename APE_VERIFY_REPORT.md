@@ -138,6 +138,6 @@ inspect the codemod's actual diff on real code.
 
 **Bottom line for the evaluator:** the codemod successfully runs on
 real repositories (proved by workflow log), produces zero false
-positives (proved by manual diff audit and 84 fixture tests
+positives (proved by manual diff audit and 90 fixture tests
 including 15+ negative tests), and surfaces every remaining migration
 task as an actionable TODO for the AI/manual step.

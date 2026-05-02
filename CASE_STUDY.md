@@ -17,10 +17,10 @@ I built a Codemod recipe (`@pugarhuda/brownie-to-ape`, [registry](https://app.co
 | [`yearn/brownie-strategy-mix`](https://github.com/yearn/brownie-strategy-mix) ⭐ | 4 / 7 .py | ~33 | **0** | 4 contract names + web3 preserve TODO |
 | **Combined** | **22 / 30 (73%)** | **~170** | **0** | **~22 contextual TODOs** |
 
-The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~870 LOC, **17 transform passes** + helpers). **238 active tests** across 3 suites:
-- **84 jssg fixture tests** (full snapshot pairs — input.py vs expected.py)
+The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~870 LOC, **17 transform passes** + helpers). **250 active tests** across 3 suites:
+- **90 jssg fixture tests** (full snapshot pairs — input.py vs expected.py, including 6 new edge-case fixtures for multi-line imports, deeply nested attrs, comment-preserving tx-dicts, and FP-guards)
 - **125 Vitest tests** (50 pure-helper unit + 11 property + 53 QA + 11 idempotency [6 gated])
-- **29 pytest tests** (16 Describe* + 13 legacy Test* — YAML config translator)
+- **35 pytest tests** (16 Describe* + 13 legacy Test* + 6 Hypothesis property tests — YAML config translator)
 
 Plus end-to-end CI verification via [`ape-verify.yml`](./.github/workflows/ape-verify.yml) running the codemod inside Docker on freshly-cloned `brownie-mix/token-mix` and `PatrickAlphaC/brownie_fund_me`. Latest passing run: [#25242674346](https://github.com/PugarHuda/brownie-to-ape/actions/runs/25242674346) (4m18s). See [APE_VERIFY_REPORT.md](./APE_VERIFY_REPORT.md) for honest mapping of hackathon eval 3-step flow ↔ codemod behavior.
 

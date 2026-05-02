@@ -8,7 +8,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 `@pugarhuda/brownie-to-ape`
 
 ## Tagline / Short Description (≤140 chars)
-> Automated Brownie → ApeWorx Ape migration codemod. 17-pass jssg transform, **238 tests** (84 fixture + 125 Vitest + 29 pytest), validated on **5 OSS repos (incl. Yearn Finance) with zero false positives**. Live demo: pugarhuda.github.io/brownie-to-ape
+> Automated Brownie → ApeWorx Ape migration codemod. 17-pass jssg transform, **250 tests** (90 fixture + 125 Vitest + 35 pytest), validated on **5 OSS repos (incl. Yearn Finance) with zero false positives**. Live demo: pugarhuda.github.io/brownie-to-ape
 
 ## Category Tags
 - AI-assisted coding

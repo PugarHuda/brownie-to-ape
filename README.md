@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml/badge.svg)](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
-[![Tests](https://img.shields.io/badge/tests-84%20fixture%20%2B%20154%20unit-brightgreen)](./tests)
+[![Tests](https://img.shields.io/badge/tests-90%20fixture%20%2B%20154%20unit-brightgreen)](./tests)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
 [![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-5-blue)](./CASE_STUDY.md)
 [![Version](https://img.shields.io/badge/version-0.7.6-blue)](./CHANGELOG.md)
@@ -10,6 +10,8 @@
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 
 Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 17-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on **5 real OSS Brownie projects (incl. Yearn Finance) with zero false positives**.
+
+🌐 **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape · 🇮🇩 **Bahasa Indonesia:** [README.id.md](./README.id.md)
 
 > Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes + Track 2: Public Case Study).
 
@@ -39,7 +41,10 @@ bash demo/run-demo.sh
 
 > 📋 **Hackathon evaluator?** See [EVALUATOR.md](./EVALUATOR.md) for the
 > 3-step evaluation walkthrough (~15–20 min total): codemod run → AI
-> cleanup → `ape compile && ape test` verification.
+> cleanup → `ape compile && ape test` verification. End-to-end AI-step
+> walkthrough on token-mix: [`demo/ai-step-demo.md`](./demo/ai-step-demo.md).
+> Engineering tradeoffs / deferred features:
+> [`docs/DEFERRED_FEATURES.md`](./docs/DEFERRED_FEATURES.md).
 
 ## Why use this
 
