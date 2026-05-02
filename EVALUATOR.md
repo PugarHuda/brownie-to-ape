@@ -215,9 +215,28 @@ explicit about what's **not** verified:
 
 ## Submission links
 
-- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (v0.7.5)
+- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (v0.7.9)
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
-- **Case study:** [CASE_STUDY.md](./CASE_STUDY.md)
+- **Live demo:** https://pugarhuda.github.io/brownie-to-ape/
+- **Case study (combined):** [CASE_STUDY.md](./CASE_STUDY.md)
+- **AI-step demo:** [`demo/ai-step-demo.md`](./demo/ai-step-demo.md)
+- **Ape-verify passing log (38/38):** [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log)
 - **Demo:** [DEMO.md](./DEMO.md) and [`demo/demo.cast`](./demo/demo.cast)
-- **Track 3 issue at ApeWorX/ape:** https://github.com/ApeWorX/ape/issues/2774
+- **Bahasa Indonesia README:** [README.id.md](./README.id.md)
+
+### Published case studies (Track 2)
+
+- 📝 [Medium — End-to-end token-mix migration](https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1)
+- 📝 [dev.to — Yearn DeFi-specific migration](https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57)
+- 📝 [Medium — Engineering tradeoffs](https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b)
+
+### Ecosystem PRs (Track 3)
+
+- 🔥 [eth-brownie/brownie #2145](https://github.com/eth-brownie/brownie/pull/2145) — upstream Brownie repo migration tooling section
+- [ApeWorX/ape #2780](https://github.com/ApeWorX/ape/pull/2780) — official Brownie migration guide
+- [codemod-com/codemod #2168](https://github.com/codemod-com/codemod/pull/2168) — Codemod platform docs
+- [rajasegar/awesome-codemods #7](https://github.com/rajasegar/awesome-codemods/pull/7) — adds Python section
+- [Kludex/awesome-python-codemods #1](https://github.com/Kludex/awesome-python-codemods/pull/1) — Python-specific list
+- [ApeWorX/ape issue #2774](https://github.com/ApeWorX/ape/issues/2774) — original framework adoption request
+
 - **CI:** https://github.com/PugarHuda/brownie-to-ape/actions

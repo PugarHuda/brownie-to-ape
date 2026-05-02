@@ -4,7 +4,7 @@
 > which transforms the codemod handles automatically and which you'll
 > need to migrate manually.
 >
-> Last updated: v0.7.6.
+> Last updated: v0.7.9.
 
 ## Auto-migrated (deterministic, 0 FP)
 

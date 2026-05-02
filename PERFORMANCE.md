@@ -5,7 +5,7 @@
 
 ## TL;DR
 
-| Metric | Target | Actual (v0.7.6) |
+| Metric | Target | Actual (v0.7.9) |
 |---|---|---|
 | Per-file transform | < 500 ms p99 | < 50 ms typical |
 | Per-repo end-to-end (5 reference repos) | < 5 s warm | ~3 s (workflow) + ~10-20 s (npx warmup) |
