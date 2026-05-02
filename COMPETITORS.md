@@ -11,7 +11,7 @@
 
 | Tool | Author | Latest | Tests | OSS repos | FP rate | Notes |
 |---|---|---|---|---|---|---|
-| **`@pugarhuda/brownie-to-ape`** ⭐ (this repo) | Pugar Huda | v0.7.6 | **231** (77 fixture + 125 Vitest + 29 pytest) | **5** (incl. Yearn Finance) | **0** (audited) | 17 passes, Stryker baseline, Docker ape-verify, Track 3 issue |
+| **`@pugarhuda/brownie-to-ape`** ⭐ (this repo) | Pugar Huda | v0.7.6 | **238** (84 fixture + 125 Vitest + 29 pytest) | **5** (incl. Yearn Finance) | **0** (audited) | 17 passes, Stryker baseline, Docker ape-verify (CI-passed), Track 3 issue |
 | `apeshift-pro` | Earnwithalee7890 (Boring AI) | v1.0.2 | ~3 fixtures | 1 (Yearn) | unverified | "26 AST rules" (config.yml is scaffold template), HTML demo, 10 downloads |
 | `apeshift` | Boring AI Hackathon (organizer) | unknown | unknown | unknown | unknown | Likely the official reference baseline used by judges |
 | `brownie-to-ape` (unscoped) | dmetagame (Darouma) | v0.1.1 | ~13 fixtures | 3 | implicit | Stale 4 days as of last check; 6 test categories |

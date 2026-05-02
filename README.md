@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml/badge.svg)](https://github.com/PugarHuda/brownie-to-ape/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./codemod.yaml)
-[![Tests](https://img.shields.io/badge/tests-77%20fixture%20%2B%20154%20unit-brightgreen)](./tests)
+[![Tests](https://img.shields.io/badge/tests-84%20fixture%20%2B%20154%20unit-brightgreen)](./tests)
 [![FP Rate](https://img.shields.io/badge/false--positives-0-brightgreen)](./CASE_STUDY.md)
 [![Validated repos](https://img.shields.io/badge/OSS%20repos%20validated-5-blue)](./CASE_STUDY.md)
 [![Version](https://img.shields.io/badge/version-0.7.6-blue)](./CHANGELOG.md)
@@ -213,15 +213,16 @@ bash scripts/preflight.sh /path/to/repo   # pre-flight pattern surface estimate
 bash scripts/preview.sh /path/to/repo     # dry-run wrapper with stats
 ```
 
-### Test suite (231 active tests, 0 failures)
+### Test suite (238 active tests, 0 failures)
 
 | Suite | Tests | Tool | Purpose |
 |---|---|---|---|
-| jssg fixtures | 77 | Codemod CLI | full transform snapshot tests |
+| jssg fixtures | **84** | Codemod CLI | full transform snapshot tests |
 | Vitest unit | 50 | Vitest | pure helpers in isolation |
 | Vitest property | 11 active + 6 gated | Vitest | idempotency, determinism |
 | Vitest QA | 53 | Vitest | version, docs, perf budget, golden-master |
 | Python pytest | 29 | pytest | YAML config translator (Describe* + Test*) |
+| **Plus**: real-repo CI verification | — | GitHub Actions | [`ape-verify.yml`](./.github/workflows/ape-verify.yml) runs codemod inside Docker on freshly-cloned repos, see [APE_VERIFY_REPORT.md](./APE_VERIFY_REPORT.md) |
 
 ## Rollback
 
