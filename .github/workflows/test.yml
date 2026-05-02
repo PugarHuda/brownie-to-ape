@@ -6,17 +6,52 @@ on:
   pull_request:
 
 jobs:
-  jssg-test:
-    runs-on: ubuntu-latest
+  jssg-fixtures:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, macos-14, windows-2022]
+        node: [20, 22]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ matrix.node }}
 
       - name: Run jssg fixture suite
         run: npx codemod@latest jssg test -l python ./scripts/codemod.ts ./tests/fixtures
 
       - name: Validate workflow schema
         run: npx codemod@latest workflow validate -w workflow.yaml
+
+  vitest-unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run Vitest unit + QA tests
+        run: npm run test:unit -- --reporter=default
+
+  python-unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install pytest + pyyaml
+        run: pip install --no-cache-dir pytest pyyaml
+
+      - name: Run Python unit tests
+        run: python -m pytest tests/ -v

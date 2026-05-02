@@ -1,15 +1,24 @@
 {
   "name": "brownie-to-ape",
-  "version": "0.7.0",
-  "description": "Automated migration codemod from Brownie to ApeWorx Ape — 12-pass jssg transform, 46 tests, zero false positives across 4 OSS repos.",
+  "version": "0.7.6",
+  "description": "Automated migration codemod from Brownie to ApeWorx Ape — 17-pass jssg transform, 70 fixture + Vitest unit + Python tests, zero false positives across 5 OSS repos.",
   "private": true,
   "scripts": {
     "test": "npx codemod@latest jssg test -l python ./scripts/codemod.ts ./tests/fixtures",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:property": "vitest run tests/property",
+    "test:qa": "vitest run tests/qa",
+    "test:python": "python -m pytest tests/ -v",
+    "test:all": "npm test && npm run test:unit && npm run test:python",
     "validate": "npx codemod@latest workflow validate -w workflow.yaml",
     "benchmark": "bash scripts/benchmark.sh",
     "demo": "bash demo/run-demo.sh",
     "render-cast": "python scripts/render_cast.py",
     "publish:codemod": "npx codemod@latest publish"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
   },
   "keywords": [
     "brownie",
