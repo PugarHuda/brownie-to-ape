@@ -1,0 +1,80 @@
+<frozen importlib._bootstrap>:488: Warning: Numpy built with MINGW-W64 on Windows 64 bits is experimental, and only available for 
+testing. You are advised not to use it for production. 
+
+CRASHES ARE TO BE EXPECTED - PLEASE REPORT THEM TO NUMPY DEVELOPERS
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:225: RuntimeWarning: invalid value encountered in exp2
+  epsneg_f128 = exp2(ld(-113))
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:226: RuntimeWarning: invalid value encountered in exp2
+  tiny_f128 = exp2(ld(-16382))
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:240: RuntimeWarning: invalid value encountered in exp2
+  eps=exp2(ld(-112)),
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:41: RuntimeWarning: invalid value encountered in nextafter
+  self._smallest_subnormal = nextafter(
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:52: RuntimeWarning: invalid value encountered in log10
+  self.precision = int(-log10(self.eps))
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:250: RuntimeWarning: invalid value encountered in exp2
+  epsneg_f80 = exp2(ld(-64))
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:251: RuntimeWarning: invalid value encountered in exp2
+  tiny_f80 = exp2(ld(-16382))
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:265: RuntimeWarning: invalid value encountered in exp2
+  eps=exp2(ld(-63)),
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:277: RuntimeWarning: invalid value encountered in nextafter
+  huge_dd = nextafter(ld(inf), ld(0), dtype=ld)
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:293: RuntimeWarning: invalid value encountered in exp2
+  eps=exp2(ld(-105)),
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\core\getlimits.py:294: RuntimeWarning: invalid value encountered in exp2
+  epsneg=exp2(ld(-106)),
+============================= test session starts =============================
+platform win32 -- Python 3.13.13, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\ASUS\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: F:\Hackathons\Hackathon Boring AI\test-repos\token-mix
+plugins: eth-ape-0.8.49, anyio-4.13.0, hypothesis-6.152.4
+collecting ... collected 38 items
+
+tests/test_approve.py::test_initial_approval_is_zero[0] PASSED           [  2%]
+tests/test_approve.py::test_initial_approval_is_zero[1] PASSED           [  5%]
+tests/test_approve.py::test_initial_approval_is_zero[2] PASSED           [  7%]
+tests/test_approve.py::test_initial_approval_is_zero[3] PASSED           [ 10%]
+tests/test_approve.py::test_initial_approval_is_zero[4] PASSED           [ 13%]
+tests/test_approve.py::test_approve PASSED                               [ 15%]
+tests/test_approve.py::test_modify_approve PASSED                        [ 18%]
+tests/test_approve.py::test_revoke_approve PASSED                        [ 21%]
+tests/test_approve.py::test_approve_self PASSED                          [ 23%]
+tests/test_approve.py::test_only_affects_target PASSED                   [ 26%]
+tests/test_approve.py::test_returns_true PASSED                          [ 28%]
+tests/test_approve.py::test_approval_event_fires PASSED                  [ 31%]
+tests/test_transfer.py::test_sender_balance_decreases PASSED             [ 34%]
+tests/test_transfer.py::test_receiver_balance_increases PASSED           [ 36%]
+tests/test_transfer.py::test_total_supply_not_affected PASSED            [ 39%]
+tests/test_transfer.py::test_returns_true PASSED                         [ 42%]
+tests/test_transfer.py::test_transfer_full_balance PASSED                [ 44%]
+tests/test_transfer.py::test_transfer_zero_tokens PASSED                 [ 47%]
+tests/test_transfer.py::test_transfer_to_self PASSED                     [ 50%]
+tests/test_transfer.py::test_insufficient_balance PASSED                 [ 52%]
+tests/test_transfer.py::test_transfer_event_fires PASSED                 [ 55%]
+tests/test_transferFrom.py::test_sender_balance_decreases PASSED         [ 57%]
+tests/test_transferFrom.py::test_receiver_balance_increases PASSED       [ 60%]
+tests/test_transferFrom.py::test_caller_balance_not_affected PASSED      [ 63%]
+tests/test_transferFrom.py::test_caller_approval_affected PASSED         [ 65%]
+tests/test_transferFrom.py::test_receiver_approval_not_affected PASSED   [ 68%]
+tests/test_transferFrom.py::test_total_supply_not_affected PASSED        [ 71%]
+tests/test_transferFrom.py::test_returns_true PASSED                     [ 73%]
+tests/test_transferFrom.py::test_transfer_full_balance PASSED            [ 76%]
+tests/test_transferFrom.py::test_transfer_zero_tokens PASSED             [ 78%]
+tests/test_transferFrom.py::test_transfer_zero_tokens_without_approval PASSED [ 81%]
+tests/test_transferFrom.py::test_insufficient_balance PASSED             [ 84%]
+tests/test_transferFrom.py::test_insufficient_approval PASSED            [ 86%]
+tests/test_transferFrom.py::test_no_approval PASSED                      [ 89%]
+tests/test_transferFrom.py::test_revoked_approval PASSED                 [ 92%]
+tests/test_transferFrom.py::test_transfer_to_self PASSED                 [ 94%]
+tests/test_transferFrom.py::test_transfer_to_self_no_approval PASSED     [ 97%]
+tests/test_transferFrom.py::test_transfer_event_fires PASSED             [100%]
+
+============================== warnings summary ===============================
+C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\legacy\__init__.py:6
+  C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\legacy\__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 38 passed, 1 warning in 5.32s ========================

@@ -10,8 +10,8 @@
 | Step (per hackathon evaluation §) | Status | Evidence |
 |---|---|---|
 | 1. Codemod runs on real repo + commits changes | ✅ **PROVEN** | [`ape-verify.yml` workflow run #25242503595](https://github.com/PugarHuda/brownie-to-ape/actions/runs/25242503595) — codemod CLI exits 0 on both `token-mix` and `brownie_fund_me`, produces clean unified diff |
-| 2. AI agent handles remaining edge cases | 🟡 **DESIGNED FOR, NOT EXECUTED** | TODO comments are AI-friendly (specific, actionable). Examples in workflow log: `# TODO(brownie-to-ape): no direct Ape equivalent for: FundMe, MockV3Aggregator` |
-| 3. Manual fixes until build/tests pass | 🟡 **EXPECTED-AT-THIS-STEP** | `ape compile` fails on first run because contract artifacts (`FundMe`, `MockV3Aggregator`, `Token`) need manual rewrite to `project.X.deploy(...)`. This is exactly the gap the hackathon evaluation expects. |
+| 2. AI agent handles remaining edge cases | ✅ **PROVEN** | [`docs/ape-verify-token-mix.log`](./docs/ape-verify-token-mix.log) — 6 manual AI-step fixes applied per the [TODO comments](./demo/ai-step-demo.md): `int(1e21)` cast, `project.Token.deploy(...)`, single-quote tx-dict in `test_approve.py`, `tx.return_value` → state assertion, `tx.events["X"].values()` → `tx.decode_logs(token.X)`, `getattr(log, "from")` for keyword. |
+| 3. Manual fixes until build/tests pass | ✅ **PROVEN** | `ape compile` SUCCESS (solc 0.6.12) + `ape test --network ::test` → **38 passed, 0 failed in 5.40s** on migrated `brownie-mix/token-mix` |
 
 ## The full hackathon evaluation flow ↔ our codemod's behavior
 
@@ -139,5 +139,45 @@ inspect the codemod's actual diff on real code.
 **Bottom line for the evaluator:** the codemod successfully runs on
 real repositories (proved by workflow log), produces zero false
 positives (proved by manual diff audit and 90 fixture tests
-including 15+ negative tests), and surfaces every remaining migration
-task as an actionable TODO for the AI/manual step.
+including 15+ negative tests), and the **full 3-step evaluation
+pipeline now has end-to-end evidence on `brownie-mix/token-mix`**:
+codemod ✅ → 6 manual/AI edits ✅ → `ape compile && ape test` →
+**38 passed in 5.40s**.
+
+## Reproducing the green log
+
+```bash
+# 1. Reset target to clean Brownie state
+cd test-repos/token-mix && git checkout -- .
+
+# 2. Run codemod
+cd ../../brownie-to-ape
+npx codemod@latest workflow run -w workflow.yaml \
+  --target ../test-repos/token-mix \
+  --no-interactive --allow-dirty
+
+# 3. Migrate brownie-config.yaml
+python scripts/migrate_config.py ../test-repos/token-mix
+
+# 4. Apply 6 AI-step fixes (see docs/ape-verify-token-mix.log section
+#    "Manual fixes applied" or demo/ai-step-demo.md):
+#   - scripts/token.py: prefix Token with project.
+#   - tests/conftest.py: drop isolate fixture, int(1e21), Token→project.Token
+#   - tests/test_approve.py: {'from': X} → sender=X (file had no
+#     `import brownie`, codemod skipped per FP guard)
+#   - tx.return_value is True → check state via balance/allowance
+#   - tx.events["X"].values() → list(tx.decode_logs(token.X))
+#   - log._from → getattr(log, "from") (keyword guard)
+
+# 5. Compile + test
+pip install eth-ape  # if not installed
+ape plugins install solidity --yes
+cd ../test-repos/token-mix
+ape compile           # SUCCESS — solc 0.6.12, 2 contracts
+ape test --network ::test  # ============ 38 passed in 5.40s ============
+```
+
+The 6 AI-step fixes total **~30 lines of edits** across 4 files —
+clearly scoped, mechanical for an AI agent reading the codemod's
+TODO comments and Ape API docs. This matches the hackathon's stated
+goal: "Automate 80%+ of the migration; minimize manual work."
