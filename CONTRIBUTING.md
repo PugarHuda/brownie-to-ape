@@ -5,6 +5,54 @@ with a flat fixture suite (`tests/fixtures/NN-name/{input,expected}.py`).
 This keeps it readable, easy to PR, and aligned with how `jssg` codemods
 are typically structured.
 
+## ⚡ Quick start (3 minutes)
+
+```bash
+# 1. Clone & install dev deps
+git clone https://github.com/PugarHuda/brownie-to-ape && cd brownie-to-ape
+npm install
+
+# 2. Run the full test suite (77 fixture + 117 Vitest + 29 pytest = 223 tests)
+npm test                # jssg snapshot tests
+npm run test:unit       # Vitest unit + property + qa
+python -m pytest tests/ # Python unittests for migrate_config.py
+
+# 3. Make a change (TDD — write the fixture FIRST)
+mkdir tests/fixtures/78-my-new-pattern
+echo "# my brownie input" > tests/fixtures/78-my-new-pattern/input.py
+echo "# my ape expected"  > tests/fixtures/78-my-new-pattern/expected.py
+npm test  # confirm it fails as expected, then implement in scripts/codemod.ts
+```
+
+Expected feedback loops:
+- jssg fixture suite: ~1 second
+- Vitest suite: ~2 seconds
+- pytest suite: <1 second
+- Full local test:all: ~5 seconds
+
+## Where things live
+
+```
+brownie-to-ape/
+├── scripts/
+│   ├── codemod.ts          ← THE ONE FILE you'll edit for new transforms
+│   ├── migrate_config.py   ← YAML config helper (separate concern)
+│   ├── benchmark.sh        ← multi-repo timing benchmark
+│   └── preview.sh          ← dry-run wrapper for end users
+├── tests/
+│   ├── fixtures/<NN>-<name>/{input,expected}.py  ← jssg snapshot pairs
+│   ├── unit/pure-helpers.test.ts                 ← Vitest helper tests
+│   ├── property/{determinism,idempotency}.test.ts
+│   ├── qa/{version-consistency,docs-integrity,perf-budget,golden-master}.test.ts
+│   ├── test_migrate_config.py                    ← legacy unittest
+│   └── test_migrate_config_pytest.py             ← Describe* pytest
+├── workflow.yaml           ← Codemod CLI workflow definition
+├── codemod.yaml            ← package metadata
+└── docs/
+    ├── index.html          ← live demo (deployed at pugarhuda.github.io/brownie-to-ape/)
+    └── TESTING_PROMPT.md   ← test-suite generation prompt for AI agents
+```
+
 ## Adding a new transform pass
 
 1. **Decide the pattern.** Find an `ast-grep` pattern that matches the

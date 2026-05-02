@@ -1,0 +1,40 @@
+# Dockerfile for end-to-end verification of codemod output.
+#
+# Builds an image with eth-ape + common Solidity plugins, suitable for
+# running `ape compile && ape test` on a migrated Brownie repo.
+#
+# Build:
+#   docker build -f Dockerfile.ape -t brownie-to-ape-verify .
+#
+# Use (mount a migrated repo as /work):
+#   docker run --rm -v "$(pwd)/test-repos/token-mix:/work" \
+#     brownie-to-ape-verify "ape compile"
+#
+# This is heavier than the in-repo test suite — only runs in the
+# nightly `ape-verify.yml` workflow + manual dispatch.
+
+FROM python:3.13-slim
+
+# System dependencies needed by Solidity compilation + cryptography
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        build-essential \
+        libssl-dev \
+        libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install eth-ape with common plugins
+RUN pip install --no-cache-dir \
+    eth-ape \
+    ape-solidity \
+    ape-foundry \
+    ape-infura \
+    ape-alchemy
+
+WORKDIR /work
+
+# Default to a shell so we can run arbitrary `ape` commands from compose.
+ENTRYPOINT ["bash", "-lc"]
+CMD ["ape --version && ape plugins list"]
