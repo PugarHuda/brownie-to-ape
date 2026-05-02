@@ -52,7 +52,7 @@ Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. A typi
 | Tx-dict → kwargs (deploy / method calls) | Find-replace per file | One pass, zero FP |
 | `network.show_active()` in subscripts/f-strings | Hand-edit each | Auto-rewritten |
 | Exception class renames | Look up Ape docs per name | `VirtualMachineError` → `ContractLogicError` automatic |
-| Risk of regressions | Medium (typos, missed sites) | Zero (validated on 4 OSS repos) |
+| Risk of regressions | Medium (typos, missed sites) | Zero (validated on 5 OSS repos incl. Yearn Finance) |
 | `brownie-config.yaml` → `ape-config.yaml` | Manual rewrite | [`scripts/migrate_config.py`](./scripts/migrate_config.py) handles known fields |
 
 ## What it migrates
@@ -72,9 +72,15 @@ Brownie was deprecated in 2023; ApeWorX Ape is the recommended successor. A typi
 | 11 | Brownie exception class names | `exceptions.VirtualMachineError`, `brownie.exceptions.VirtualMachineError` | `exceptions.ContractLogicError`, `ape.exceptions.ContractLogicError` |
 | 12 | `accounts.add(pk)` inline TODO | `accounts.add(pk)` | `accounts.add(pk)  # TODO: Ape uses accounts.import_account_from_private_key(...)` |
 | 13 | Brownie's `isolate(fn_isolation): pass` fixture | `def isolate(fn_isolation): pass` | TODO comment above the decorator (Ape has `chain.isolate()` built-in) |
-| 14 | `Wei("X")` calls | `Wei("1 ether")` | `Wei("1 ether")  # TODO: from ape.utils import convert; convert("1 ether", int)` (inline TODO at safe contexts) |
+| 14 | `Wei("X")` calls (auto-rewrite!) | `Wei("1 ether")` | `convert("1 ether", int)` + auto-injects `from ape.utils import convert` |
 | 15 | `interface.X(addr)` calls | `interface.IERC20(addr)` | `interface.IERC20(addr)  # TODO: Ape's Contract(addr) with explicit ABI/type` |
-| 16 | Unknown `exceptions.X` references | `exceptions.SomeUnknownExc` | TODO at top of file listing unmapped exception names |
+| 16 | `accounts.at(addr, force=True)` | `accounts.at(WHALE, force=True)` | `accounts.impersonate_account(WHALE)` (strict force-keyword guard) |
+| 17 | `tx.events[N][key]` (event index access) | `tx.events[0]["amount"]` | `tx.events[0].event_arguments["amount"]` |
+| 18 | `tx.events["Name"][key]` (event name access) | `tx.events["Transfer"]["to"]` | `[log for log in tx.events if log.event_name == "Transfer"][0].event_arguments["to"]` |
+| 19 | `<Contract>[-1]` / `len(<C>)` / `<C>.at(addr)` | `Token[-1]`, `Token.at(addr)` | `project.Token.deployments[-1]`, `project.Token.at(addr)` |
+| 20 | `web3.eth.get_balance(X)` | `web3.eth.get_balance(addr)` | `chain.get_balance(addr)` + auto-injects `from ape import chain` |
+| 21 | `ZERO_ADDRESS` import | `from brownie import ZERO_ADDRESS` | `from ape.utils import ZERO_ADDRESS` (moved to `ape.utils`) |
+| 22 | Unknown `exceptions.X` references | `exceptions.SomeUnknownExc` | TODO at top of file listing unmapped exception names |
 | Bonus | YAML config helper (`scripts/migrate_config.py`) | `brownie-config.yaml` | `ape-config.yaml` (networks, solidity, dependencies translated; legacy file preserved) |
 
 ## Install & Run
@@ -93,7 +99,7 @@ codemod workflow run -w workflow.yaml -t /path/to/your/brownie/project --no-inte
 
 ## Validated on real OSS repos
 
-Tested on four Brownie OSS projects covering different shapes (token tutorial, simple deploy, multi-network lottery with VRF mocks, Aave DeFi integration):
+Tested on five Brownie OSS projects covering different shapes (token tutorial, oracle deploy, multi-network lottery with VRF mocks, Aave DeFi integration, Yearn Finance strategy template):
 
 | Repo | Files modified | Patterns auto-migrated | False positives |
 |---|---|---|---|
@@ -101,10 +107,11 @@ Tested on four Brownie OSS projects covering different shapes (token tutorial, s
 | [PatrickAlphaC/brownie_fund_me](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 `.py` | ~21 (5 imports, 8 tx-dicts, 8 show_active, 1 exception rename, 1 accounts.add TODO) | **0** |
 | [PatrickAlphaC/smartcontract-lottery](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 `.py` | ~30 (5 imports, 13 tx-dicts, 9 show_active, 1 exception rename) | **0** |
 | [PatrickAlphaC/aave_brownie_py_freecode](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 4 / 5 `.py` | ~24 (3 imports, 8 tx-dicts, 7 show_active, 5 interface TODOs) | **0** |
+| [yearn/brownie-strategy-mix](https://github.com/yearn/brownie-strategy-mix) ⭐ | 4 / 7 `.py` | ~33 (3 imports incl. web3 preserve, 8 tx-dicts, 5 show_active, 4 contract drops + auto-add `project`) | **0** |
 
-**Combined: 18/23 files modified across 4 OSS repos. ~137 patterns auto-migrated. 0 false positives.**
+**Combined: 22/30 files modified across 5 OSS repos. ~170 patterns auto-migrated. 0 false positives.**
 
-See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up, [DEMO.md](./DEMO.md) for curated before/after examples, and [`benchmark/results.md`](./benchmark/results.md) for timed runs across all four repos.
+See [CASE_STUDY.md](./CASE_STUDY.md) for the full write-up, [DEMO.md](./DEMO.md) for curated before/after examples, [API_REFERENCE.md](./API_REFERENCE.md) for the comprehensive Brownie→Ape pattern map, and [`benchmark/results.md`](./benchmark/results.md) for timed runs across all five repos.
 
 ## Zero-False-Positive Guards
 
@@ -135,21 +142,48 @@ These patterns are flagged with `# TODO(brownie-to-ape): …` for manual review 
 brownie-to-ape/
 ├── codemod.yaml                # package metadata
 ├── workflow.yaml               # single-step jssg workflow
+├── Dockerfile.ape              # eth-ape verification image (ape compile/test)
+├── stryker.conf.json           # mutation testing config
 ├── scripts/
-│   ├── codemod.ts              # the transform (11 passes, ~510 LOC)
+│   ├── codemod.ts              # the transform (17 passes, ~870 LOC)
 │   ├── migrate_config.py       # supplemental YAML config converter
-│   └── benchmark.sh            # multi-repo perf benchmark
+│   ├── benchmark.sh            # multi-repo perf benchmark
+│   ├── preview.sh              # dry-run wrapper with structured stats
+│   ├── preflight.sh            # pre-flight pattern surface estimate
+│   ├── cli.ts                  # introspection wrapper (--list-passes / --pass N)
+│   ├── render_cast.py          # asciinema cast generator
+│   └── types.d.ts              # jssg ast-grep TS type declarations
 ├── demo/
-│   └── run-demo.sh             # self-contained demo (asciinema-friendly)
+│   ├── run-demo.sh             # self-contained demo (asciinema-friendly)
+│   └── demo.cast               # pre-recorded asciinema (44 events, ~14s)
+├── docs/
+│   ├── index.html              # live demo (deployed at pugarhuda.github.io/brownie-to-ape/)
+│   └── TESTING_PROMPT.md       # comprehensive QA prompt
 ├── benchmark/results.md        # latest benchmark output
-├── tests/fixtures/             # 51 input/expected test pairs, 100% passing
+├── reports/mutation/           # Stryker mutation report (HTML)
+├── tests/
+│   ├── fixtures/               # 77 jssg input/expected test pairs
+│   ├── unit/                   # 50 Vitest unit tests (pure helpers)
+│   ├── property/               # idempotency + determinism property tests
+│   ├── qa/                     # version-consistency + docs-integrity + perf-budget + golden-master
+│   ├── test_migrate_config.py  # legacy unittest
+│   └── test_migrate_config_pytest.py  # 16 Describe* class pytest
 ├── .github/workflows/
-│   ├── test.yml                # CI fixture suite on push/PR
-│   └── publish.yml             # auto-publish to registry on tag
+│   ├── test.yml                # matrix CI (Linux/macOS/Windows × Node 20/22)
+│   ├── publish.yml             # auto-publish on tag (API key + OIDC)
+│   ├── mutation.yml            # weekly Stryker mutation testing
+│   └── ape-verify.yml          # nightly Docker ape compile/test verification
 ├── README.md
 ├── DEMO.md                     # curated before/after examples
 ├── CASE_STUDY.md               # hackathon submission write-up
 ├── SUBMISSION.md               # pre-filled DoraHacks BUIDL form
+├── EVALUATOR.md                # 3-step hackathon judge walkthrough
+├── PERFORMANCE.md              # centralized perf doc with reproductions
+├── API_REFERENCE.md            # comprehensive Brownie→Ape pattern map
+├── CONTRIBUTING.md             # 3-min Quick Start + repo layout
+├── STACKBLITZ.md               # try-without-clone (4 options)
+├── SECURITY.md                 # vulnerability reporting policy
+├── CHANGELOG.md                # SemVer release notes
 ├── TRACK_3_ISSUE_DRAFT.md      # ApeWorX issue body for Track 3
 └── CLAUDE.md                   # project context for Claude Code
 ```
@@ -158,18 +192,36 @@ brownie-to-ape/
 
 ```bash
 # Quick (npm scripts):
-npm test            # 46 fixture tests
-npm run validate    # workflow schema validation
-npm run benchmark   # time codemod on 4 reference repos
-npm run demo        # clone + run codemod + show diff
-npm run render-cast # regenerate demo/demo.cast
+npm test                    # 77 jssg fixture tests
+npm run test:unit           # 125 Vitest unit + property + qa tests
+npm run test:python         # 29 pytest tests (migrate_config.py)
+npm run validate            # workflow schema validation
+npm run benchmark           # time codemod on 5 reference repos
+npm run demo                # clone + run codemod + show diff
+npm run render-cast         # regenerate demo/demo.cast
 
 # Or directly:
 codemod jssg test -l python ./scripts/codemod.ts ./tests/fixtures
 codemod workflow validate -w workflow.yaml
 codemod workflow run -w workflow.yaml -t /path/to/repo --dry-run
 codemod login && codemod publish
+
+# Codemod CLI introspection (npm scripts wrapper)
+npx tsx scripts/cli.ts --list-passes      # show all 17 passes with summaries
+npx tsx scripts/cli.ts --pass 4           # show details for a specific pass
+bash scripts/preflight.sh /path/to/repo   # pre-flight pattern surface estimate
+bash scripts/preview.sh /path/to/repo     # dry-run wrapper with stats
 ```
+
+### Test suite (231 active tests, 0 failures)
+
+| Suite | Tests | Tool | Purpose |
+|---|---|---|---|
+| jssg fixtures | 77 | Codemod CLI | full transform snapshot tests |
+| Vitest unit | 50 | Vitest | pure helpers in isolation |
+| Vitest property | 11 active + 6 gated | Vitest | idempotency, determinism |
+| Vitest QA | 53 | Vitest | version, docs, perf budget, golden-master |
+| Python pytest | 29 | pytest | YAML config translator (Describe* + Test*) |
 
 ## Rollback
 
