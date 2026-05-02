@@ -19,9 +19,13 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 - Smart contracts
 
 ## Tracks Targeted
-- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.8
-- ✅ **Track 2: Public Case Study** (target $200) — `CASE_STUDY.md` + `DEMO.md` + asciinema cast
-- ✅ **Track 3: Framework Adoption** — issue [#2774](https://github.com/ApeWorX/ape/issues/2774) opened at ApeWorX/ape (target up to $2,000)
+- ✅ **Track 1: Production Migration Recipe** (Size: L, target $400) — published at v0.7.8 — 17 transform passes, 250 tests, 5 OSS repos validated incl. Yearn Finance, end-to-end `ape test` 38/38 PASS
+- ✅ **Track 2: Public Case Study** (3 published, target $600) — see "Published Case Studies" links below
+- ✅ **Track 3: Framework Adoption** — 4 ecosystem PRs filed (target up to $2,000):
+  - ApeWorX/ape issue [#2774](https://github.com/ApeWorX/ape/issues/2774) + PR [#2780](https://github.com/ApeWorX/ape/pull/2780) — official Brownie migration guide
+  - codemod-com/codemod PR [#2168](https://github.com/codemod-com/codemod/pull/2168) — Codemod platform docs
+  - rajasegar/awesome-codemods PR [#7](https://github.com/rajasegar/awesome-codemods/pull/7) — awesome list inclusion
+  - Kludex/awesome-python-codemods PR [#1](https://github.com/Kludex/awesome-python-codemods/pull/1) — Python-specific awesome list
 
 ## Full Description
 
@@ -76,13 +80,32 @@ Ran 13 tests in 0.001s. OK
 ```
 
 ## Links
+
+### Code & Registry
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
 - **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.8)
-- **Case Study:** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
-- **Demo (curated diffs):** https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md
-- **Asciinema cast:** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast
-- **Track 3 issue at ApeWorX/ape:** https://github.com/ApeWorX/ape/issues/2774
+- **Live demo:** https://pugarhuda.github.io/brownie-to-ape/
 - **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.8
+
+### Published Case Studies (Track 2)
+- 📝 **Medium — End-to-end token-mix migration with `ape test` 38/38 PASS:** https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1
+- 📝 **Medium — Engineering tradeoffs: why we said NO to 5 features:** https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b
+- 📝 **dev.to — Yearn Finance DeFi-specific migration walkthrough:** https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57
+
+### Framework Adoption (Track 3)
+- **ApeWorX/ape issue #2774 (filed 2026-04-29):** https://github.com/ApeWorX/ape/issues/2774
+- **ApeWorX/ape PR #2780 (filed 2026-05-02):** https://github.com/ApeWorX/ape/pull/2780
+- **codemod-com/codemod PR #2168 (filed 2026-05-02):** https://github.com/codemod-com/codemod/pull/2168
+- **rajasegar/awesome-codemods PR #7:** https://github.com/rajasegar/awesome-codemods/pull/7
+- **Kludex/awesome-python-codemods PR #1:** https://github.com/Kludex/awesome-python-codemods/pull/1
+
+### Repository Documentation
+- **CASE_STUDY.md (combined 5-repo benchmark):** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
+- **DEMO.md (curated diffs):** https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md
+- **AI-step demo (token-mix):** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/ai-step-demo.md
+- **APE_VERIFY_REPORT (38/38 ape test PASS log):** https://github.com/PugarHuda/brownie-to-ape/blob/main/docs/ape-verify-token-mix.log
+- **Bahasa Indonesia README:** https://github.com/PugarHuda/brownie-to-ape/blob/main/README.id.md
+- **Asciinema cast:** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast
 
 ## How to test (for evaluators)
 
@@ -130,7 +153,8 @@ The hackathon explicitly evaluates: (1) zero false positives, (2) coverage, (3) 
 | **Validated on Yearn Finance** | [`yearn/brownie-strategy-mix`](https://github.com/yearn/brownie-strategy-mix) — 4/7 .py files modified, ~33 patterns auto-migrated, **0 FP** | See [`CASE_STUDY.md`](./CASE_STUDY.md) row 5 |
 | **Engineering rigor / honest tradeoffs** | [`docs/DEFERRED_FEATURES.md`](./docs/DEFERRED_FEATURES.md) explicitly documents what we did NOT implement (browser WASM playground, Stryker score >50%, full `accounts.add` auto-rewrite) and why each would compromise the 0 FP guarantee | — |
 | **Bahasa Indonesia translation** | [`README.id.md`](./README.id.md) — full feature matrix, validation table, architecture overview | — |
-| **Framework adoption (Track 3)** | [PR #2780 to ApeWorX/ape](https://github.com/ApeWorX/ape/pull/2780) adds `@pugarhuda/brownie-to-ape` as an "Alternative Codemod" reference in the official Brownie migration guide; complementary to the existing recommendation | — |
+| **Framework adoption (Track 3)** | 4 ecosystem PRs filed: ApeWorX/ape [#2780](https://github.com/ApeWorX/ape/pull/2780), codemod-com/codemod [#2168](https://github.com/codemod-com/codemod/pull/2168), rajasegar/awesome-codemods [#7](https://github.com/rajasegar/awesome-codemods/pull/7), Kludex/awesome-python-codemods [#1](https://github.com/Kludex/awesome-python-codemods/pull/1) | — |
+| **Public case studies (Track 2)** | 3 published: [token-mix end-to-end](https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1) (Medium), [Yearn DeFi-specific](https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57) (dev.to), [Engineering tradeoffs](https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b) (Medium) | — |
 
 The submission deliberately prefers **FN over FP** wherever the right rewrite cannot be inferred from the AST alone (contract artifacts, custom-bodied test fixtures, project-schema-dependent rewrites). The hackathon's scoring formula `100 × (1 − ((FP × wFP) + (FN × wFN)) ÷ (N × (wFP + wFN)))` weights FP heavier than FN, so this is the mathematically optimal stance.
 
@@ -155,5 +179,7 @@ The submission deliberately prefers **FN over FP** wherever the right rewrite ca
 - [x] **Track 3 issue opened at ApeWorX/ape#2774** ⭐
 - [x] **Track 3 PR opened at ApeWorX/ape#2780** ⭐ (additive doc reference)
 - [x] LICENSE, SECURITY, CHANGELOG, CONTRIBUTING, FUNDING.yml all present
-- [x] GitHub repo metadata: 12 topics, homepage URL, banner SVG
+- [x] GitHub repo metadata: 12 topics, homepage URL, banner SVG, logo (SVG + PNG + JPEG)
+- [x] **3 case studies published** (2 Medium + 1 dev.to)
+- [x] **4 ecosystem PRs filed** (ApeWorX, Codemod, 2 awesome-lists)
 - [ ] Submit BUIDL on DoraHacks (this form ⬅)

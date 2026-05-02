@@ -17,12 +17,21 @@
 [![Version](https://img.shields.io/badge/version-0.7.8-blue)](./CHANGELOG.md)
 [![ApeWorX docs PR](https://img.shields.io/badge/ApeWorX%20docs-PR%20%232780-blueviolet)](https://github.com/ApeWorX/ape/pull/2780)
 [![Codemod docs PR](https://img.shields.io/badge/Codemod%20docs-PR%20%232168-blueviolet)](https://github.com/codemod-com/codemod/pull/2168)
+[![Case studies](https://img.shields.io/badge/published%20case%20studies-3-success)](#published-case-studies)
 [![Mutation](https://img.shields.io/badge/mutation%20baseline-38.57%25-yellow)](./reports/mutation/mutation.html)
 [![jssg](https://img.shields.io/badge/engine-Codemod%20jssg-orange)](https://docs.codemod.com/jssg/intro)
 
 Automated migration codemod from [Brownie](https://eth-brownie.readthedocs.io/) to [ApeWorx Ape](https://docs.apeworx.io/). 17-pass deterministic transform built on [Codemod's `jssg` engine](https://docs.codemod.com/jssg/intro). Validated on **5 real OSS Brownie projects (incl. Yearn Finance) with zero false positives**.
 
 🌐 **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape · 🇮🇩 **Bahasa Indonesia:** [README.id.md](./README.id.md)
+
+## Published case studies
+
+Three published write-ups covering the migration from different angles:
+
+- 📝 [**End-to-end token-mix migration with `ape test` 38/38 PASS**](https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1) — Medium (canonical case study)
+- 📝 [**Migrating Yearn Finance's Strategy Template — DeFi-specific patterns**](https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57) — dev.to (Web3/DeFi audience)
+- 📝 [**Engineering tradeoffs: Why we said NO to features**](https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b) — Medium (FN-vs-FP design philosophy)
 
 > Submitted to the **Codemod Boring AI hackathon** (Track 1: Production Migration Recipes + Track 2: Public Case Study).
 
