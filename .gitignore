@@ -34,3 +34,18 @@ Thumbs.db
 
 # Benchmark working dirs (clones); keep results.md only
 benchmark/repos/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Test artifacts
+node_modules/
+coverage/
+.vitest-cache/
+reports/
+
+# Stryker artifacts
+.stryker-tmp/
