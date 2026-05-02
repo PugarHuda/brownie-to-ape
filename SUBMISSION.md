@@ -19,7 +19,7 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 - Smart contracts
 
 ## Tracks Targeted
-- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.7
+- ✅ **Track 1: Production Migration Recipe** (Size: M, target $200) — published at v0.7.8
 - ✅ **Track 2: Public Case Study** (target $200) — `CASE_STUDY.md` + `DEMO.md` + asciinema cast
 - ✅ **Track 3: Framework Adoption** — issue [#2774](https://github.com/ApeWorX/ape/issues/2774) opened at ApeWorX/ape (target up to $2,000)
 
@@ -77,12 +77,12 @@ Ran 13 tests in 0.001s. OK
 
 ## Links
 - **GitHub repo:** https://github.com/PugarHuda/brownie-to-ape
-- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.7)
+- **Codemod registry:** https://app.codemod.com/registry/@pugarhuda/brownie-to-ape (live at v0.7.8)
 - **Case Study:** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
 - **Demo (curated diffs):** https://github.com/PugarHuda/brownie-to-ape/blob/main/DEMO.md
 - **Asciinema cast:** https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/demo.cast
 - **Track 3 issue at ApeWorX/ape:** https://github.com/ApeWorX/ape/issues/2774
-- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.7
+- **Latest release:** https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.8
 
 ## How to test (for evaluators)
 
@@ -151,7 +151,7 @@ The submission deliberately prefers **FN over FP** wherever the right rewrite ca
 - [x] **End-to-end `ape compile` + `ape test` 38/38 PASS** on migrated token-mix
 - [x] README (EN + ID), CASE_STUDY, DEMO, FAQ, Troubleshooting, EVALUATOR, DEFERRED_FEATURES, AI-step demo all present
 - [x] CI workflows live: test (matrix), publish on tag, mutation (weekly), ape-verify (nightly), links (weekly)
-- [x] **Published to Codemod registry as `@pugarhuda/brownie-to-ape@0.7.7`** ⭐
+- [x] **Published to Codemod registry as `@pugarhuda/brownie-to-ape@0.7.8`** ⭐
 - [x] **Track 3 issue opened at ApeWorX/ape#2774** ⭐
 - [x] **Track 3 PR opened at ApeWorX/ape#2780** ⭐ (additive doc reference)
 - [x] LICENSE, SECURITY, CHANGELOG, CONTRIBUTING, FUNDING.yml all present

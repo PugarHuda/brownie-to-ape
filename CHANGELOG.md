@@ -7,6 +7,23 @@ Pre-1.0 versions correspond to the development phases tracked in the
 hackathon submission. After the registry publish, this becomes a normal
 SemVer changelog.
 
+## [0.7.8] — 2026-05-02
+
+Ecosystem-adoption release: 2 community PRs filed alongside our docs polish.
+
+### Added
+- **ApeWorX/ape PR [#2780](https://github.com/ApeWorX/ape/pull/2780)** — additive doc reference adding `@pugarhuda/brownie-to-ape` as an "Alternative Codemod" section in the official Brownie migration guide.
+- **codemod-com/codemod PR [#2168](https://github.com/codemod-com/codemod/pull/2168)** — full migration guide at `docs/guides/migrations/brownie-to-ape.mdx` (218 LOC), formatted to match the existing react-router-v6-v7 / react-18-19 / nuxt-3-4 guides.
+- **Logo system** — three SVG variants: `docs/logo.svg` (512×512 primary), `docs/logo-mark.svg` (256×256 icon-only), `docs/logo-favicon.svg` (64×64 browser tab). Wired into README header + live demo.
+- **README badges** for both ecosystem PRs (ApeWorX #2780, Codemod #2168) so the activity is visible above-the-fold.
+
+### Changed
+- Refreshed remaining stale test-count references (238 → 250) in `README.md`, `SUBMISSION.md`, `EVALUATOR.md`. The Hypothesis fuzzer (6 tests) and 6 new fixtures (85-90) added in v0.7.7 left a few stragglers.
+
+### Notes
+- Codemod logic itself **unchanged from v0.7.6 / v0.7.7** (same 17 transform passes, same FP guards). This is purely an ecosystem adoption + docs release.
+- Both PRs are still **open** at time of release; the activity itself is the signal, regardless of merge timing.
+
 ## [0.7.7] — 2026-05-02
 
 End-to-end proof: codemod + AI-step + `ape compile` + `ape test` PASS on
