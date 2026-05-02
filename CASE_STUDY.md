@@ -6,7 +6,7 @@
 
 ## TL;DR
 
-I built a Codemod recipe (`brownie-to-ape`) that migrates Python smart-contract projects from the deprecated Brownie framework to ApeWorx Ape. Validated on **four** real open-source repos with **zero false positives**:
+I built a Codemod recipe (`@pugarhuda/brownie-to-ape`, [registry](https://app.codemod.com/registry/@pugarhuda/brownie-to-ape)) that migrates Python smart-contract projects from the deprecated Brownie framework to ApeWorx Ape. Validated on **five** real open-source repos with **zero false positives**:
 
 | Repo | Files | Patterns auto-migrated | False positives | TODOs (manual review) |
 |---|---|---|---|---|
@@ -14,9 +14,15 @@ I built a Codemod recipe (`brownie-to-ape`) that migrates Python smart-contract 
 | [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me) | 5 / 6 .py | ~21 | **0** | 4 contract names + 1 accounts.add |
 | [`PatrickAlphaC/smartcontract-lottery`](https://github.com/PatrickAlphaC/smartcontract-lottery) | 5 / 7 .py | ~30 | **0** | 5 contract names + 1 isolate |
 | [`PatrickAlphaC/aave_brownie_py_freecode`](https://github.com/PatrickAlphaC/aave_brownie_py_freecode) | 4 / 5 .py | ~24 | **0** | 1 interface drop + 5 inline interface TODOs |
-| **Combined** | **18 / 23** | **~137** | **0** | **~19 contextual TODOs** |
+| [`yearn/brownie-strategy-mix`](https://github.com/yearn/brownie-strategy-mix) ⭐ | 4 / 7 .py | ~33 | **0** | 4 contract names + web3 preserve TODO |
+| **Combined** | **22 / 30 (73%)** | **~170** | **0** | **~22 contextual TODOs** |
 
-The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~510 LOC, 11 transform passes + helper). 38 fixture tests, all passing.
+The codemod uses Codemod's **`jssg` engine** (ast-grep on Tree-sitter) and runs in ~3 seconds per repo. Source: [`scripts/codemod.ts`](./scripts/codemod.ts) (~870 LOC, **17 transform passes** + helpers). **231 active tests** across 3 suites:
+- **77 jssg fixture tests** (full snapshot pairs — input.py vs expected.py)
+- **125 Vitest tests** (50 pure-helper unit + 11 property + 53 QA + 11 idempotency [6 gated])
+- **29 pytest tests** (16 Describe* + 13 legacy Test* — YAML config translator)
+
+Plus a [Stryker mutation-testing baseline](./reports/mutation/mutation.html) (38.57%, 108/278 mutants killed), [live demo](https://pugarhuda.github.io/brownie-to-ape/), [Track 3 issue](https://github.com/ApeWorX/ape/issues/2774) at ApeWorX/ape, [comprehensive API reference](./API_REFERENCE.md), and a [Docker `ape compile/test` verification workflow](./.github/workflows/ape-verify.yml).
 
 ---
 
