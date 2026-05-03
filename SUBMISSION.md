@@ -21,10 +21,12 @@ Pre-filled form fields untuk submit ke https://dorahacks.io/hackathon/codemod/bu
 ## Tracks Targeted
 - ✅ **Track 1: Production Migration Recipe** (Size: L, target $400) — published at v0.7.9 — 17 transform passes, 250 tests, 5 OSS repos validated incl. Yearn Finance, end-to-end `ape test` 38/38 PASS
 - ✅ **Track 2: Public Case Study** (3 published, target $600) — see "Published Case Studies" links below
-- ✅ **Track 3: Framework Adoption** — 5 ecosystem PRs filed (target up to $2,000):
-  - ApeWorX/ape issue [#2774](https://github.com/ApeWorX/ape/issues/2774) + PR [#2780](https://github.com/ApeWorX/ape/pull/2780) — official Brownie migration guide
-  - codemod-com/codemod PR [#2168](https://github.com/codemod-com/codemod/pull/2168) — Codemod platform docs
+- ✅ **Track 3: Framework Adoption** — **7 ecosystem PRs** filed (target up to $2,000):
   - **eth-brownie/brownie PR [#2145](https://github.com/eth-brownie/brownie/pull/2145)** — upstream source repo migration tooling section ⭐
+  - ApeWorX/ape PR [#2780](https://github.com/ApeWorX/ape/pull/2780) + issue [#2774](https://github.com/ApeWorX/ape/issues/2774) — official Brownie migration guide
+  - **ApeWorX/skills PR [#9](https://github.com/ApeWorX/skills/pull/9)** — new `migrate-from-brownie` skill for Claude/LLMs ⭐
+  - codemod-com/codemod PR [#2168](https://github.com/codemod-com/codemod/pull/2168) — Codemod platform docs
+  - **bkrem/awesome-solidity PR [#173](https://github.com/bkrem/awesome-solidity/pull/173)** — Brownie entry annotation in 7k⭐ list ⭐
   - rajasegar/awesome-codemods PR [#7](https://github.com/rajasegar/awesome-codemods/pull/7) — awesome list inclusion
   - Kludex/awesome-python-codemods PR [#1](https://github.com/Kludex/awesome-python-codemods/pull/1) — Python-specific awesome list
 
@@ -93,13 +95,15 @@ Ran 13 tests in 0.001s. OK
 - 📝 **Medium — Engineering tradeoffs: why we said NO to 5 features:** https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b
 - 📝 **dev.to — Yearn Finance DeFi-specific migration walkthrough:** https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57
 
-### Framework Adoption (Track 3)
+### Framework Adoption (Track 3) — 7 ecosystem PRs filed
 - **eth-brownie/brownie PR #2145 (filed 2026-05-03):** https://github.com/eth-brownie/brownie/pull/2145 ⭐ — upstream source repo migration tooling section
-- **ApeWorX/ape issue #2774 (filed 2026-04-29):** https://github.com/ApeWorX/ape/issues/2774
-- **ApeWorX/ape PR #2780 (filed 2026-05-02):** https://github.com/ApeWorX/ape/pull/2780
-- **codemod-com/codemod PR #2168 (filed 2026-05-02):** https://github.com/codemod-com/codemod/pull/2168
-- **rajasegar/awesome-codemods PR #7:** https://github.com/rajasegar/awesome-codemods/pull/7
-- **Kludex/awesome-python-codemods PR #1:** https://github.com/Kludex/awesome-python-codemods/pull/1
+- **ApeWorX/ape PR #2780:** https://github.com/ApeWorX/ape/pull/2780 — official Brownie migration guide
+- **ApeWorX/skills PR #9 (filed 2026-05-03):** https://github.com/ApeWorX/skills/pull/9 — new `migrate-from-brownie` skill for Claude/LLMs
+- **codemod-com/codemod PR #2168:** https://github.com/codemod-com/codemod/pull/2168 — Codemod platform docs
+- **bkrem/awesome-solidity PR #173 (7,024⭐):** https://github.com/bkrem/awesome-solidity/pull/173 — annotation on Brownie entry
+- **rajasegar/awesome-codemods PR #7:** https://github.com/rajasegar/awesome-codemods/pull/7 — adds Python section
+- **Kludex/awesome-python-codemods PR #1:** https://github.com/Kludex/awesome-python-codemods/pull/1 — Python-specific list
+- **ApeWorX/ape issue #2774:** https://github.com/ApeWorX/ape/issues/2774 — original framework adoption request
 
 ### Repository Documentation
 - **CASE_STUDY.md (combined 5-repo benchmark):** https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md
