@@ -16,12 +16,22 @@ Codemod migrasi otomatis Brownie → ApeWorx Ape untuk Codemod hackathon (Boring
 brownie-to-ape/
 ├── codemod.yaml         # package metadata (name, version, targets, registry)
 ├── workflow.yaml        # 1-step jssg workflow
-├── scripts/codemod.ts   # ⭐ transform code (4 ordered passes)
-├── tests/fixtures/      # 19 input.py / expected.py pairs
-├── package.json         # tsconfig + dev deps
+├── scripts/codemod.ts   # ⭐ transform code (~870 LOC, 17 ordered passes)
+├── scripts/migrate_config.py    # Brownie YAML → Ape YAML translator
+├── scripts/cli.ts       # --list-passes / --pass N introspection
+├── tests/fixtures/      # 90 input.py / expected.py pairs
+├── tests/unit/          # 50 Vitest pure-helper tests
+├── tests/property/      # 11 idempotency/determinism tests
+├── tests/qa/            # 53 version/docs/perf/golden-master tests
+├── tests/test_migrate_config*.py  # 35 pytest tests (incl. 6 Hypothesis fuzz)
+├── docs/                # case studies, AI-step demo, deferred-features, logo, banner
+├── package.json         # vitest + dev deps
 ├── tsconfig.json
-├── README.md            # user-facing docs
-├── CASE_STUDY.md        # hackathon submission write-up
+├── README.md (+ README.id.md)   # user-facing docs (EN + Bahasa)
+├── CASE_STUDY.md        # combined 5-repo benchmark
+├── SUBMISSION.md        # DoraHacks BUIDL form helper
+├── EVALUATOR.md         # 3-step hackathon judge walkthrough
+├── CHANGELOG.md         # SemVer release notes
 └── CLAUDE.md            # this file
 ```
 
@@ -45,21 +55,34 @@ npx codemod@latest login
 npx codemod@latest publish
 ```
 
-## Architecture: 4-pass transform
+## Architecture: 17-pass transform
 
-Lihat `scripts/codemod.ts`. Urutan pass penting karena edit overlap dihindari via:
+Lihat `scripts/codemod.ts` (~870 LOC). Urutan pass penting karena edit overlap dihindari via:
 
 1. Sequencing: specific patterns (Pass 2) duluan dari generic (Pass 3)
 2. Whitelisting: `network` sengaja TIDAK ada di `ATTR_RENAMES` supaya `brownie.network` raw tidak di-rewrite (cukup `brownie.network.show_active()` yang kena Pass 2)
-3. AST containment check: `isInsideDictionary()` skip Pass 3 di dalam dict — biar Pass 4 ambil alih via regex re-rename
+3. AST containment check: `isInsideDictionary()` skip Pass 3 di dalam dict — biar Pass 4 ambil alih
 
-Pass list:
-- **Pass 1:** `from brownie import …` → `from ape import …` (rename `network`→`networks`, drop contract names + unsupported builtins)
-- **Pass 2a:** `brownie.network.show_active()` → `networks.active_provider.network.name`
-- **Pass 2b:** bare `network.show_active()` → same
+Cek pass list lengkap dengan: `npx tsx scripts/cli.ts --list-passes`
+
+Highlights:
+- **Pass 1:** `from brownie import …` → `from ape import …` (rename `network`→`networks`, drop contract names + unsupported builtins, relocate constants `ZERO_ADDRESS` → `ape.utils`)
+- **Pass 2:** `brownie.network.show_active()` + bare `network.show_active()` → `networks.active_provider.network.name`
+- **Pass 2c:** Exception class renames (`VirtualMachineError` → `ContractLogicError`, dll)
 - **Pass 3:** `brownie.<whitelisted_attr>` → `ape.<attr>` (skips inside dicts)
-- **Pass 3b:** `import brownie` → `import ape` (only if Pass 3 fired)
 - **Pass 4:** tx-dict `{"from": …}` → `sender=…, …` kwargs (whitelist guard: all keys harus di TX_DICT_KEYS)
+- **Pass 5:** `chain.mine(N)` → `chain.mine(num_blocks=N)`
+- **Pass 6:** `chain.sleep(N)` (statement) → `chain.pending_timestamp += N`
+- **Pass 7:** `accounts.add(pk)` inline TODO
+- **Pass 7b:** `accounts.at(addr, force=True)` → `accounts.impersonate_account(addr)` (whale impersonation)
+- **Pass 8:** `def isolate(fn_isolation): pass` fixture detection
+- **Pass 9:** `Wei("X")` → `convert("X", int)` + auto-import
+- **Pass 10:** `interface.IERC20(addr)` inline TODO
+- **Pass 11-12:** `Web3.toWei` / `fromWei` inline TODOs, web3 preserve
+- **Pass 13-14:** Event field renames (`tx.events[…].args.X` → `tx.events[…].X`)
+- **Pass 15:** Contract artifact rewrite untuk pola yang aman
+- **Pass 16:** `web3.eth.X` → `networks.provider.web3.eth.X`
+- **Pass 17:** Fixup pass — residual brownie references → top-of-file TODO
 
 ## Zero-FP guards (jangan dilonggarkan tanpa pertimbangan)
 
@@ -78,9 +101,14 @@ Pass list:
 
 ## Validasi nyata
 
-Tested on:
-- `brownie-mix/token-mix` (cd ../test-repos/token-mix) → 4/5 .py modified, 0 FP
-- `PatrickAlphaC/brownie_fund_me` (cd ../test-repos/brownie_fund_me) → 5/6 .py modified, 0 FP
+Tested on 5 OSS repos, semua 0 FP:
+- `brownie-mix/token-mix` → 4/5 .py modified, ~62 patterns
+- `PatrickAlphaC/brownie_fund_me` → 5/6 .py modified, ~21 patterns
+- `PatrickAlphaC/smartcontract-lottery` → 5/7 .py modified, ~30 patterns
+- `PatrickAlphaC/aave_brownie_py_freecode` → 4/5 .py modified, ~24 patterns
+- `yearn/brownie-strategy-mix` ⭐ → 4/7 .py modified, ~33 patterns
+
+End-to-end on token-mix: `ape compile` SUCCESS + `ape test --network ::test` → **38 passed, 0 failed in 5.40s** (lihat `docs/ape-verify-token-mix.log`).
 
 Reset workflow:
 ```bash
