@@ -4,8 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>brownie-to-ape · Live demo</title>
-<meta name="description" content="Automated Brownie -> ApeWorx Ape migration codemod. 17-pass jssg transform, 250 tests, validated on 5 OSS repos with zero false positives.">
+<meta name="description" content="Automated Brownie -> ApeWorx Ape migration codemod. 17-pass jssg transform, 250 tests, validated on 5 OSS repos with zero false positives. End-to-end ape test 38/38 PASS.">
 <link rel="icon" type="image/svg+xml" href="./logo-favicon.svg" />
+
+<!-- Open Graph (Facebook, LinkedIn, Discord previews) -->
+<meta property="og:title" content="brownie-to-ape · Codemod" />
+<meta property="og:description" content="Automated Brownie → ApeWorx Ape migration codemod. 17-pass jssg transform, 250 tests, 5 OSS repos validated incl. Yearn Finance, 0 false positives. End-to-end ape test 38/38 PASS." />
+<meta property="og:image" content="https://raw.githubusercontent.com/PugarHuda/brownie-to-ape/main/docs/banner.png" />
+<meta property="og:image:width" content="1280" />
+<meta property="og:image:height" content="640" />
+<meta property="og:url" content="https://pugarhuda.github.io/brownie-to-ape/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="brownie-to-ape" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="brownie-to-ape · Codemod" />
+<meta name="twitter:description" content="Automated Brownie → ApeWorx Ape migration codemod. 17-pass jssg, 250 tests, 5 OSS repos, 0 false positives. ape test 38/38 PASS." />
+<meta name="twitter:image" content="https://raw.githubusercontent.com/PugarHuda/brownie-to-ape/main/docs/banner.png" />
+
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/asciinema-player@3.7.0/dist/bundle/asciinema-player.css" />
 <style>
 :root {
@@ -239,7 +256,9 @@ footer a:hover { text-decoration: underline; }
       <a class="badge success" href="https://github.com/PugarHuda/brownie-to-ape">⭐ GitHub</a>
       <a class="badge" href="https://github.com/PugarHuda/brownie-to-ape/releases/tag/v0.7.9">v0.7.9</a>
       <a class="badge success" href="https://github.com/PugarHuda/brownie-to-ape/actions">✓ CI passing</a>
-      <a class="badge" href="https://github.com/ApeWorX/ape/issues/2774">📬 Track 3 issue #2774</a>
+      <a class="badge success" href="https://github.com/PugarHuda/brownie-to-ape/blob/main/docs/ape-verify-token-mix.log">✓ ape test 38/38</a>
+      <a class="badge" href="#case-studies">📝 3 case studies</a>
+      <a class="badge" href="#ecosystem-prs">📬 7 ecosystem PRs</a>
     </div>
     <div class="cta">
       <a class="btn btn-primary" href="https://github.com/PugarHuda/brownie-to-ape">View source</a>
@@ -252,9 +271,10 @@ footer a:hover { text-decoration: underline; }
 <section>
   <div class="container">
     <h2>One command<span class="sub">~3 seconds per repo, zero false positives</span></h2>
-    <div class="run-cmd">
+    <div class="run-cmd" id="run-cmd-block" style="position:relative;">
+<button id="copy-cmd" type="button" aria-label="Copy command" style="position:absolute; top:10px; right:10px; padding:6px 12px; background:var(--bg-3); border:1px solid var(--line); color:var(--fg-dim); border-radius:6px; font-family:var(--mono); font-size:0.8rem; cursor:pointer; transition:all 0.15s;">📋 Copy</button>
 <span class="comment"># Run on any Brownie project — git diff to see what changed</span>
-npx codemod@latest @pugarhuda/brownie-to-ape -t /path/to/your/brownie/project</div>
+<span id="cmd-text">npx codemod@latest @pugarhuda/brownie-to-ape -t /path/to/your/brownie/project</span></div>
   </div>
 </section>
 
@@ -470,6 +490,58 @@ def existing_owner():
   </div>
 </section>
 
+<section id="case-studies">
+  <div class="container">
+    <h2>Published case studies<span class="sub">3 articles covering different angles</span></h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+      <a href="https://medium.com/@hudapugar/migrating-brownie-to-apeworx-ape-how-i-built-a-0-false-positive-codemod-with-250-tests-and-661f97e065e1" style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px; text-decoration:none; color:inherit; transition:transform 0.1s, border-color 0.1s; display:block;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)'; this.style.transform='translateY(0)'">
+        <div style="color:var(--accent-2); font-size:0.8rem; font-family:var(--mono); margin-bottom:6px;">📝 MEDIUM</div>
+        <h3 style="margin:0 0 8px; font-size:1rem; color:var(--fg);">End-to-end token-mix migration with <code>ape test</code> 38/38 PASS</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.88rem; line-height:1.5;">
+          Walks through the full pipeline: codemod application, AI-step manual cleanup (~30 LOC across 4 files), and a passing pytest log. The canonical case study.
+        </p>
+      </a>
+      <a href="https://dev.to/hudapugar/migrating-yearn-finances-strategy-template-from-brownie-to-apeworx-ape-a-defi-specific-case-study-4m57" style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px; text-decoration:none; color:inherit; transition:transform 0.1s, border-color 0.1s; display:block;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)'; this.style.transform='translateY(0)'">
+        <div style="color:var(--accent-2); font-size:0.8rem; font-family:var(--mono); margin-bottom:6px;">📝 DEV.TO</div>
+        <h3 style="margin:0 0 8px; font-size:1rem; color:var(--fg);">Migrating Yearn Finance's strategy template — DeFi-specific patterns</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.88rem; line-height:1.5;">
+          DeFi-shaped patterns (whale impersonation, multi-network config, complex tx-dict) tested against the official Yearn strategy template that every Yearn dev forks.
+        </p>
+      </a>
+      <a href="https://medium.com/@hudapugar/engineering-tradeoffs-why-we-said-no-to-features-in-a-hackathon-codemod-19e2de92897b" style="background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:20px; text-decoration:none; color:inherit; transition:transform 0.1s, border-color 0.1s; display:block;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--line)'; this.style.transform='translateY(0)'">
+        <div style="color:var(--accent-2); font-size:0.8rem; font-family:var(--mono); margin-bottom:6px;">📝 MEDIUM</div>
+        <h3 style="margin:0 0 8px; font-size:1rem; color:var(--fg);">Engineering tradeoffs: why we said NO to features</h3>
+        <p style="margin:0; color:var(--fg-dim); font-size:0.88rem; line-height:1.5;">
+          5 features deliberately rejected (browser WASM playground, Stryker score &gt;50%, full <code>accounts.add</code> auto-rewrite) — each from FN-vs-FP scoring math.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="ecosystem-prs">
+  <div class="container">
+    <h2>Ecosystem outreach<span class="sub">7 community PRs filed for Track 3 framework adoption</span></h2>
+    <div style="overflow-x:auto;">
+    <table class="repo-table">
+      <thead><tr><th>Repo</th><th>Stars</th><th>PR</th><th>What it adds</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/eth-brownie/brownie">eth-brownie/brownie</a> 🔥</td><td>2.6k⭐</td><td><a href="https://github.com/eth-brownie/brownie/pull/2145">#2145</a></td><td>Migration tooling section in upstream Brownie's README — every Brownie user lands here</td></tr>
+        <tr><td><a href="https://github.com/ApeWorX/ape">ApeWorX/ape</a></td><td>1.1k⭐</td><td><a href="https://github.com/ApeWorX/ape/pull/2780">#2780</a></td><td>"Alternative Codemod" section in the official Ape Brownie migration guide</td></tr>
+        <tr><td><a href="https://github.com/ApeWorX/skills">ApeWorX/skills</a> 🔥</td><td>—</td><td><a href="https://github.com/ApeWorX/skills/pull/9">#9</a></td><td>New <code>migrate-from-brownie</code> skill for Claude/LLM agents (Ape's own LLM skills repo)</td></tr>
+        <tr><td><a href="https://github.com/codemod-com/codemod">codemod-com/codemod</a></td><td>8k⭐</td><td><a href="https://github.com/codemod-com/codemod/pull/2168">#2168</a></td><td>Full <code>brownie-to-ape</code> migration guide in Codemod platform docs (218 LOC)</td></tr>
+        <tr><td><a href="https://github.com/bkrem/awesome-solidity">bkrem/awesome-solidity</a> 🔥</td><td>7k⭐</td><td><a href="https://github.com/bkrem/awesome-solidity/pull/173">#173</a></td><td>Annotation on existing Brownie entry with deprecation notice + migration tool</td></tr>
+        <tr><td><a href="https://github.com/rajasegar/awesome-codemods">rajasegar/awesome-codemods</a></td><td>—</td><td><a href="https://github.com/rajasegar/awesome-codemods/pull/7">#7</a></td><td>Adds Python section with 4 entries (incl. brownie-to-ape, django-codemod, bowler, LibCST)</td></tr>
+        <tr><td><a href="https://github.com/Kludex/awesome-python-codemods">Kludex/awesome-python-codemods</a></td><td>—</td><td><a href="https://github.com/Kludex/awesome-python-codemods/pull/1">#1</a></td><td>First PR in their repo; adds brownie-to-ape to the Codemods list</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="color:var(--fg-dim); font-size:0.88rem; margin-top:16px;">
+      Plus issue <a href="https://github.com/ApeWorX/ape/issues/2774" style="color:var(--blue)">ApeWorX/ape#2774</a> filed 4 days before the PR with cross-link comment for closure trail.
+    </p>
+  </div>
+</section>
+
 <section>
   <div class="container">
     <h2>Why this is the strongest Brownie → Ape codemod on the registry</h2>
@@ -529,6 +601,42 @@ tabs.forEach(t => t.addEventListener('click', () => {
   t.classList.add('active');
   document.querySelector(`.diff-pane[data-pane="${t.dataset.tab}"]`).classList.add('active');
 }));
+
+// Copy-to-clipboard for the npx command
+const copyBtn = document.getElementById('copy-cmd');
+const cmdText = document.getElementById('cmd-text');
+if (copyBtn && cmdText && navigator.clipboard) {
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(cmdText.textContent.trim());
+      const original = copyBtn.textContent;
+      copyBtn.textContent = '✓ Copied';
+      copyBtn.style.color = 'var(--green)';
+      copyBtn.style.borderColor = 'var(--green)';
+      setTimeout(() => {
+        copyBtn.textContent = original;
+        copyBtn.style.color = 'var(--fg-dim)';
+        copyBtn.style.borderColor = 'var(--line)';
+      }, 1500);
+    } catch (err) {
+      copyBtn.textContent = '✗ Failed';
+      setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 1500);
+    }
+  });
+  copyBtn.addEventListener('mouseover', () => { copyBtn.style.background = 'var(--bg)'; });
+  copyBtn.addEventListener('mouseout', () => { copyBtn.style.background = 'var(--bg-3)'; });
+}
+
+// Smooth scroll for in-page anchors
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
 
 // Asciinema-player loads the demo cast directly from GitHub raw.
 // The cast was generated by scripts/render_cast.py from a captured
